@@ -1,0 +1,9 @@
+[data-theme='dark'] {
+    --primary-color: 76, 155, 255;
+    --minor-color: 33, 33, 33;
+    --background-color: 33, 33, 33;
+    --text-color: 255, 255, 255;
+    --screen-bg-color: linear-gradient(120deg, rgba(30, 31, 34, 0.8), rgba(30, 31, 34, 0.9));
+    --scrren-grid-bg-color: linear-gradient(to right, rgba(33, 33, 33, 0.08) 1px, transparent 100px),
+    linear-gradient(to bottom, rgba(33, 33, 33, 0.08) 1px, transparent 100px);
+}
