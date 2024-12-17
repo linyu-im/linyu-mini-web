@@ -80,7 +80,7 @@
             </div>
 
             <div class="chat-input-area">
-              <div class="input-box"></div>
+              <linyu-input width="80%" radius="50px"/>
               <div class="publish-button">
                 <i class="iconfont icon-fasong2 text-[28px]"/>
               </div>
@@ -98,7 +98,7 @@
             <div class="flex">
               <icon-button v-if="themeStore.theme==='light'" @click="(e)=>toggleDark(e,'dark')" icon="icon-taiyang"/>
               <icon-button v-if="themeStore.theme==='dark'" @click="(e)=>toggleDark(e,'light')" icon="icon-yueliang"/>
-              <icon-button @click="" icon="icon-tuichu"/>
+              <icon-button @click="handlerLogout" icon="icon-tuichu"/>
             </div>
           </div>
           <div class="right-content">
@@ -132,8 +132,11 @@ import {ref} from 'vue'
 import {useThemeStore} from "@/stores/useThemeStore.js";
 import IconButton from "@/components/IconButton.vue";
 import {toggleDark} from "@/utils/theme.js";
+import LinyuInput from "@/components/LinyuInput.vue";
+import {useRouter} from "vue-router";
 
 const themeStore = useThemeStore();
+const router = useRouter();
 
 const showLeft = ref(false)
 const showRight = ref(false)
@@ -143,6 +146,11 @@ const closeMask = () => {
   showRight.value = false
 }
 
+
+const handlerLogout = () => {
+  sessionStorage.removeItem("x-token")
+  router.push('/login')
+}
 
 </script>
 
@@ -418,15 +426,7 @@ const closeMask = () => {
           display: flex;
           align-items: center;
           justify-content: center;
-
-          .input-box {
-            background-color: rgb(var(--background-color));
-            height: 50px;
-            width: 80%;
-            border-radius: 50px;
-            border: rgba(var(--background-color), 0.5) 2px solid;
-            margin-right: 10px;
-          }
+          padding: 0 10px;
 
           .publish-button {
             height: 55px;
