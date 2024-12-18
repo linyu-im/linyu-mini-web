@@ -10,8 +10,12 @@
           </div>
           <div class="chat-list-item black">
             <div class="chat-item-avatar"></div>
+            <linyu-avatar text="群" size="40px" :color="2" class="mr-[10px]"/>
             <div class="chat-item-content">
-              <div class="chat-content-name">linyu在线聊天群</div>
+              <div class="flex items-center mb-[5px]">
+                <div class="chat-content-name">linyu在线聊天群</div>
+                <linyu-dot-hint text="99"/>
+              </div>
               <div class="chat-content-msg">这是一条消息</div>
             </div>
           </div>
@@ -47,41 +51,29 @@
             </div>
           </div>
           <div class="middle-content">
-            <div class="chat-show-area">
-              <div class="msg-item">
-                <div class="w-[40px] h-[40px] bg-gray-500 rounded-[40px] mr-[10px] shrink-0"></div>
+            <div class="chat-show-area" ref="chatShowAreaRef">
+
+              <div v-for="(item) in msgRecord" class="msg-item" :key="item.id"
+                   :class="{right:item.fromId===currentUserId}">
+                <linyu-avatar v-if="item.fromId!==currentUserId" :text="item.fromInfo.name" size="40px"
+                              class="mr-[5px]"/>
                 <div class="msg-box">
-                  <div class="text-[rgba(var(--text-color),0.7)] mb-[5px] select-none">heath</div>
+                  <div class="msg-username">
+                    {{ item.fromInfo.name }}
+                  </div>
                   <div class="msg-content">
-                    在么?
+                    {{ item.message }}
                   </div>
                 </div>
+                <linyu-avatar v-if="item.fromId===currentUserId" :text="item.fromInfo.name" size="40px"
+                              class="ml-[5px]"/>
               </div>
 
-              <div class="msg-item">
-                <div class="w-[40px] h-[40px] bg-gray-500 rounded-[40px] mr-[10px] shrink-0"></div>
-                <div class="msg-box">
-                  <div class="text-[rgba(var(--text-color),0.7)] mb-[5px]">heath</div>
-                  <div class="msg-content">
-                    你今天怎么样？
-                  </div>
-                </div>
-              </div>
-
-              <div class="msg-item right">
-                <div class="msg-box">
-                  <div class="text-[rgba(var(--text-color),0.7)] mb-[5px]">heath</div>
-                  <div class="msg-content">
-                    你今天怎么样？
-                  </div>
-                </div>
-                <div class="w-[40px] h-[40px] bg-gray-500 rounded-[40px] ml-[10px] shrink-0"></div>
-              </div>
             </div>
 
             <div class="chat-input-area">
-              <linyu-input width="80%" radius="50px"/>
-              <div class="publish-button">
+              <linyu-input v-model:value="msgContent" width="80%" radius="50px"/>
+              <div class="publish-button" @click="onSendMsg">
                 <i class="iconfont icon-fasong2 text-[28px]"/>
               </div>
             </div>
@@ -108,15 +100,23 @@
             </div>
             <div class="online-list">
               <div class="online-list-item">
-                <div class="w-[40px] h-[40px] rounded-[50px] bg-gray-500"></div>
+                <linyu-avatar text="1" size="40px"/>
                 <div class="ml-[10px] font-[600] text-[rgb(var(--text-color))]">heath</div>
               </div>
               <div class="online-list-item odd">
-                <div class="w-[40px] h-[40px] rounded-[50px] bg-gray-500"></div>
+                <linyu-avatar text="2" size="40px"/>
                 <div class="ml-[10px] font-[600] text-[rgb(var(--text-color))]">heath</div>
               </div>
               <div class="online-list-item">
-                <div class="w-[40px] h-[40px] rounded-[50px] bg-gray-500"></div>
+                <linyu-avatar text="3" size="40px"/>
+                <div class="ml-[10px] font-[600] text-[rgb(var(--text-color))]">heath</div>
+              </div>
+              <div class="online-list-item">
+                <linyu-avatar text="4" size="40px"/>
+                <div class="ml-[10px] font-[600] text-[rgb(var(--text-color))]">heath</div>
+              </div>
+              <div class="online-list-item">
+                <linyu-avatar text="5" size="40px"/>
                 <div class="ml-[10px] font-[600] text-[rgb(var(--text-color))]">heath</div>
               </div>
             </div>
@@ -128,28 +128,132 @@
 </template>
 
 <script setup>
-import {ref} from 'vue'
+import {nextTick, onMounted, reactive, ref, watch} from 'vue'
 import {useThemeStore} from "@/stores/useThemeStore.js";
 import IconButton from "@/components/IconButton.vue";
 import {toggleDark} from "@/utils/theme.js";
 import LinyuInput from "@/components/LinyuInput.vue";
 import {useRouter} from "vue-router";
+import LinyuAvatar from "@/components/LinyuAvatar.vue";
+import ChatListApi from "@/api/chatList.js";
+import LinyuDotHint from "@/components/LinyuDotHint.vue";
+import MessageApi from "@/api/message.js";
 
 const themeStore = useThemeStore();
 const router = useRouter();
 
+let recordIndex = 0;
+const currentUserId = localStorage.getItem('userId')
 const showLeft = ref(false)
 const showRight = ref(false)
+const groupChat = reactive({unreadCount: 0, lastMessage: {message: ""}})
+const msgRecord = ref([])
+const targetId = ref("1")
+const msgContent = ref('')
+const chatShowAreaRef = ref();
+const isLoading = ref(false);
+const isComplete = ref(false);
+
+const handleScroll = () => {
+  if (chatShowAreaRef.value) {
+    if (chatShowAreaRef.value.scrollTop === 0 && !isLoading.value) {
+      onGetMsgRecord();
+    }
+  }
+};
+
+onMounted(() => {
+  if (chatShowAreaRef.value) {
+    chatShowAreaRef.value.addEventListener('scroll', handleScroll);
+  }
+  onGetGroupChat()
+})
+
+
+const scrollToBottom = () => {
+  if (chatShowAreaRef.value) {
+    nextTick(() => chatShowAreaRef.value.scrollTop = chatShowAreaRef.value.scrollHeight);
+  }
+};
+
+//获取聊天记录
+const onGetMsgRecord = () => {
+  if (isLoading.value || isComplete.value) return;
+  isLoading.value = true;
+
+  const container = chatShowAreaRef.value;
+  const scrollTopBeforeLoad = container ? container.scrollTop : 0;
+  const scrollHeightBeforeLoad = container ? container.scrollHeight : 0;
+
+  MessageApi.record({targetId: targetId.value, index: recordIndex, num: 20}).then(res => {
+    if (res.code === 0) {
+      const newMessages = res.data;
+      if (newMessages.length > 0) {
+        msgRecord.value = [...newMessages, ...msgRecord.value];
+        recordIndex += newMessages.length;
+        nextTick(() => {
+          if (recordIndex === newMessages.length) {
+            scrollToBottom();
+          } else {
+            requestAnimationFrame(() => {
+              if (container) {
+                const scrollHeightAfterLoad = container.scrollHeight;
+                container.scrollTop = scrollTopBeforeLoad + (scrollHeightAfterLoad - scrollHeightBeforeLoad);
+              }
+            });
+          }
+        });
+      } else {
+        isComplete.value = true
+      }
+    }
+  }).finally(() => {
+    isLoading.value = false;
+  });
+}
+
+watch(targetId,
+    () => {
+      onGetMsgRecord()
+    },
+    {immediate: true},
+)
 
 const closeMask = () => {
   showLeft.value = false
   showRight.value = false
 }
 
-
+//退出登录
 const handlerLogout = () => {
-  sessionStorage.removeItem("x-token")
+  localStorage.removeItem("x-token")
   router.push('/login')
+}
+
+//获取群聊
+const onGetGroupChat = () => {
+  ChatListApi.group().then(res => {
+    if (res.code === 0) {
+      groupChat.unreadCount = res.data.unreadCount
+      groupChat.lastMessage = JSON.parse(res.data.lastMessage ?? "{}")
+    }
+  })
+}
+
+//发送消息
+const onSendMsg = () => {
+  if (!msgContent.value) return
+  MessageApi.send({
+    targetId: targetId.value,
+    source: targetId.value === '1' ? 'group' : 'user',
+    msgContent: msgContent.value,
+  }).then(res => {
+    if (res.code === 0) {
+      msgRecord.value.push(res.data)
+      msgContent.value = ''
+      scrollToBottom()
+    }
+  })
 }
 
 </script>
@@ -250,14 +354,6 @@ const handlerLogout = () => {
         padding: 10px;
         cursor: pointer;
 
-        .chat-item-avatar {
-          width: 48px;
-          height: 48px;
-          border-radius: 25px;
-          background-color: #2c3e50;
-          margin-right: 10px;
-        }
-
         .chat-item-content {
           display: flex;
           flex-direction: column;
@@ -266,7 +362,6 @@ const handlerLogout = () => {
           .chat-content-name {
             font-size: 14px;
             color: white;
-            margin-bottom: 5px;
           }
 
           .chat-content-msg {
@@ -284,11 +379,10 @@ const handlerLogout = () => {
         }
 
         &.black {
-          background-color: rgba(151, 151, 151, 0.6);
-
-          &:hover {
-            background-color: rgba(151, 151, 151, 0.5);
-          }
+          background-image: url("/group-bg.png");
+          background-size: cover;
+          background-repeat: no-repeat;
+          background-position: center;
         }
 
         &.white {
@@ -394,13 +488,24 @@ const handlerLogout = () => {
               align-items: flex-start;
               width: 100%;
 
+              .msg-username {
+                color: rgba(var(--text-color), 0.7);
+                margin-bottom: 2px;
+                user-select: none;
+                font-size: 14px;
+                font-weight: 600;
+              }
+
               .msg-content {
                 display: inline-block;
                 word-break: break-word;
                 max-width: 50%;
                 background-color: white;
-                padding: 10px;
+                padding: 8px;
                 border-radius: 0 10px 10px 10px;
+                font-size: 14px;
+                font-weight: 600;
+                letter-spacing: 0.5px;
               }
             }
 
