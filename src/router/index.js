@@ -19,7 +19,7 @@ const router = createRouter({
 })
 
 router.beforeEach((to, from, next) => {
-    let token = window.sessionStorage.getItem('x-token')
+    let token = window.localStorage.getItem('x-token')
     if (!token && to.path !== '/login') {
         next({path: '/login'})
         return

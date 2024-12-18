@@ -93,7 +93,7 @@ const onVerifyPassword = async () => {
   LoginApi.verify({password: encryptedPassword})
       .then((res) => {
         if (res.code === 0) {
-          sessionStorage.setItem('x-token', res.data)
+          localStorage.setItem('x-token', res.data)
           isVerifySuccess.value = true
         } else {
           showToast(res.msg, true)
@@ -119,9 +119,10 @@ const onLogin = () => {
   LoginApi.login({name: username.value, email: email.value})
       .then((res) => {
         if (res.code === 0) {
-          sessionStorage.setItem('x-token', res.data.token)
-          sessionStorage.setItem('userId', res.data.userId)
-          sessionStorage.setItem('userName', res.data.userName)
+          console.log(res)
+          localStorage.setItem('x-token', res.data.token)
+          localStorage.setItem('userId', res.data.userId)
+          localStorage.setItem('userName', res.data.userName)
           router.push('/')
         } else {
           showToast(res.msg, true)

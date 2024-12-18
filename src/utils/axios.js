@@ -6,7 +6,7 @@ export {SERVICE_URL, IP};
 
 // request 请求之前
 axios.interceptors.request.use((config) => {
-    config.headers['x-token'] = sessionStorage.getItem('x-token');
+    config.headers['x-token'] = localStorage.getItem('x-token');
     return config;
 });
 
