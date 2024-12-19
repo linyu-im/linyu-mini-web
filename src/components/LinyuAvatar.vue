@@ -23,8 +23,8 @@ const props = defineProps({
 });
 
 // 定义背景颜色列表
-const colors = ["rgba(255,184,0,0.8)", "rgba(255,83,168,0.8)",
-  "rgba(76,155,255,0.8)", "rgba(105,189,68,0.8)", "rgba(138,43,226,0.8)"];
+const colors = ["rgba(248,176,0,0.9)", "rgba(255,83,168,0.9)",
+  "rgba(76,155,255,0.9)", "rgba(105,189,68,0.9)", "rgba(138,43,226,0.9)"];
 
 const displayCharacter = computed(() => {
   if (!props.text) return "";

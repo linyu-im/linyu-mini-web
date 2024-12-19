@@ -45,7 +45,7 @@
             <div class="menu-btn" @click="showLeft = true">
               <i class="iconfont icon-liebiao text-[24px]"/>
             </div>
-            linyu在线聊天群
+            linyu在线聊天群（{{ userListMap.size }}）
             <div class="menu-btn" @click="showRight = true">
               <i class="iconfont icon-shezhi text-[24px]"/>
             </div>
@@ -84,8 +84,8 @@
         <div class="box-right" :class="{'show-right': showRight}">
           <div class="right-top">
             <div class="flex items-center">
-              <div class="user-avatar"></div>
-              <div class="user-name">heath</div>
+              <linyu-avatar :text="currentUserName" size="40px" class="mr-[5px]"/>
+              <div class="user-name">{{ currentUserName }}</div>
             </div>
             <div class="flex">
               <icon-button v-if="themeStore.theme==='light'" @click="(e)=>toggleDark(e,'dark')" icon="icon-taiyang"/>
@@ -95,29 +95,25 @@
           </div>
           <div class="right-content">
             <div class="flex justify-between items-center mb-[10px]">
-              <div class="text-[rgb(var(--text-color))] text-[14px] font-[600]">在线人数（20）</div>
+              <div class="text-[rgb(var(--text-color))] text-[14px] font-[600]">在线人数（{{ onlineCount }}）</div>
               <div class="w-[140px] h-[30px] bg-[#F9FBFF] rounded-[30px]"></div>
             </div>
             <div class="online-list">
-              <div class="online-list-item">
-                <linyu-avatar text="1" size="40px"/>
-                <div class="ml-[10px] font-[600] text-[rgb(var(--text-color))]">heath</div>
-              </div>
-              <div class="online-list-item odd">
-                <linyu-avatar text="2" size="40px"/>
-                <div class="ml-[10px] font-[600] text-[rgb(var(--text-color))]">heath</div>
-              </div>
-              <div class="online-list-item">
-                <linyu-avatar text="3" size="40px"/>
-                <div class="ml-[10px] font-[600] text-[rgb(var(--text-color))]">heath</div>
-              </div>
-              <div class="online-list-item">
-                <linyu-avatar text="4" size="40px"/>
-                <div class="ml-[10px] font-[600] text-[rgb(var(--text-color))]">heath</div>
-              </div>
-              <div class="online-list-item">
-                <linyu-avatar text="5" size="40px"/>
-                <div class="ml-[10px] font-[600] text-[rgb(var(--text-color))]">heath</div>
+              <div v-for="(item,index) in userListMap.values()"
+                   class="online-list-item"
+                   :key="item.id"
+                   :class="{odd:index%2===0}">
+                <div class="w-[40px] h-[40px] relative">
+                  <linyu-avatar :text="item.name" size="40px"/>
+                  <div v-if="item.status?.length" class="online-status"/>
+                </div>
+                <div class="ml-[10px] font-[600] text-[rgb(var(--text-color))]">{{ item.name }}</div>
+                <linyu-tooltip v-if="item.status?.includes('web')" content="浏览器在线" class="ml-[2px]">
+                  <img src="/badge/web-online.png" alt="" class="h-[18px]" draggable="false">
+                </linyu-tooltip>
+                <linyu-tooltip v-if="item.status?.includes('ssh')" content="SSH在线" class="ml-[2px]">
+                  <img src="/badge/ssh-online.png" alt="" class="h-[18px]">
+                </linyu-tooltip>
               </div>
             </div>
           </div>
@@ -128,7 +124,7 @@
 </template>
 
 <script setup>
-import {nextTick, onMounted, reactive, ref, watch} from 'vue'
+import {nextTick, onMounted, onUnmounted, reactive, ref, watch} from 'vue'
 import {useThemeStore} from "@/stores/useThemeStore.js";
 import IconButton from "@/components/IconButton.vue";
 import {toggleDark} from "@/utils/theme.js";
@@ -138,21 +134,28 @@ import LinyuAvatar from "@/components/LinyuAvatar.vue";
 import ChatListApi from "@/api/chatList.js";
 import LinyuDotHint from "@/components/LinyuDotHint.vue";
 import MessageApi from "@/api/message.js";
+import EventBus from "@/utils/eventBus.js";
+import UserApi from "@/api/user.js";
+import LinyuTooltip from "@/components/LinyuTooltip.vue";
+import ws from "@/utils/ws.js";
 
 const themeStore = useThemeStore();
 const router = useRouter();
 
 let recordIndex = 0;
 const currentUserId = localStorage.getItem('userId')
+const currentUserName = localStorage.getItem('userName')
 const showLeft = ref(false)
 const showRight = ref(false)
 const groupChat = reactive({unreadCount: 0, lastMessage: {message: ""}})
 const msgRecord = ref([])
 const targetId = ref("1")
 const msgContent = ref('')
-const chatShowAreaRef = ref();
-const isLoading = ref(false);
-const isComplete = ref(false);
+const chatShowAreaRef = ref()
+const isLoading = ref(false)
+const isComplete = ref(false)
+const userListMap = ref(new Map())
+const onlineCount = ref(0)
 
 const handleScroll = () => {
   if (chatShowAreaRef.value) {
@@ -162,11 +165,56 @@ const handleScroll = () => {
   }
 };
 
-onMounted(() => {
+const handlerReceiveMsg = (data) => {
+  if (data.fromId === currentUserId) return
+  if (targetId.value === data.fromId ||
+      (data.source === 'group' && targetId.value === "1")) {
+    msgRecord.value.push(data)
+    scrollToBottom()
+  }
+}
+
+const handlerReceiveNotify = (data) => {
+  let user = userListMap.value.get(data.content.id);
+  if (!user) {
+    user = data.content
+    userListMap.value.set(user.id, user)
+  }
+  switch (data.type) {
+    case "web-online":
+      if (!user.status) {
+        user.status = ['web'];
+        handlerUserListSort();
+      } else if (!user.status.includes('web')) {
+        user.status = [...user.status, 'web'];
+        handlerUserListSort();
+      }
+      break;
+    case "web-offline":
+      if (user.status) {
+        user.status = user.status.filter(status => status !== 'web');
+        handlerUserListSort();
+      }
+      break;
+  }
+}
+
+
+onMounted(async () => {
+  EventBus.on('on-receive-msg', handlerReceiveMsg)
   if (chatShowAreaRef.value) {
     chatShowAreaRef.value.addEventListener('scroll', handleScroll);
   }
   onGetGroupChat()
+  await onGetUserListMap()
+  await onGetOnlineWeb()
+  EventBus.on('on-receive-notify', handlerReceiveNotify)
+  handlerUserListSort();
+})
+
+
+onUnmounted(() => {
+  EventBus.off('on-receive-msg', handlerReceiveMsg)
 })
 
 
@@ -227,6 +275,7 @@ const closeMask = () => {
 //退出登录
 const handlerLogout = () => {
   localStorage.removeItem("x-token")
+  ws.disConnect()
   router.push('/login')
 }
 
@@ -255,6 +304,51 @@ const onSendMsg = () => {
     }
   })
 }
+
+//获取用户列表
+const onGetUserListMap = async () => {
+  await UserApi.listMap().then(res => {
+    if (res.code === 0) {
+      userListMap.value = new Map(Object.entries(res.data));
+    }
+  })
+}
+
+//获取web在线人员
+const onGetOnlineWeb = async () => {
+  await UserApi.onlineWeb().then(res => {
+    if (res.code === 0) {
+      const onlineWeb = res.data;
+      for (let i = 0; i < onlineWeb?.length; i++) {
+        const user = userListMap.value.get(onlineWeb[i])
+        user.status = Array.isArray(user.status) ? [...user.status, 'web'] : ['web'];
+      }
+    }
+  });
+};
+
+//根据在线排序
+const handlerUserListSort = () => {
+  const sortedEntries = [...userListMap.value.entries()].sort(([, a], [, b]) => {
+    const aStatus = a?.status || [];
+    const bStatus = b?.status || [];
+    const aStatusEmpty = aStatus.length === 0;
+    const bStatusEmpty = bStatus.length === 0;
+    if (aStatusEmpty && !bStatusEmpty) return 1;
+    if (!aStatusEmpty && bStatusEmpty) return -1;
+    return 0;
+  });
+  userListMap.value = new Map(sortedEntries);
+  let onlineNum = 0
+  for (let [, value] of userListMap.value) {
+    if (value?.status?.length > 0) {
+      onlineNum++
+    } else {
+      break
+    }
+  }
+  onlineCount.value = onlineNum
+};
 
 </script>
 
@@ -594,14 +688,6 @@ const onSendMsg = () => {
         user-select: none;
         justify-content: space-between;
 
-        .user-avatar {
-          height: 40px;
-          width: 40px;
-          background-color: rgb(var(--primary-color));
-          border-radius: 40px;
-          margin-right: 5px;
-        }
-
         .user-name {
           font-size: 16px;
           font-weight: 600;
@@ -624,9 +710,14 @@ const onSendMsg = () => {
         border-radius: 5px;
         border: rgba(var(--background-color), 0.5) 3px solid;
         padding: 5px;
+        display: flex;
+        flex-direction: column;
 
         .online-list {
           overflow-y: scroll;
+          padding-right: 5px;
+          margin-right: -5px;
+          flex: 1;
 
           .online-list-item {
             height: 50px;
@@ -636,6 +727,17 @@ const onSendMsg = () => {
             display: flex;
             align-items: center;
             padding: 10px;
+
+            .online-status {
+              position: absolute;
+              width: 12px;
+              height: 12px;
+              border-radius: 10px;
+              right: 0;
+              bottom: 0;
+              background-color: rgb(var(--primary-color));
+              border: #FFFFFF 2px solid;
+            }
 
             &.odd {
               background-image: linear-gradient(to left, rgba(var(--minor-color), 0.4), rgba(var(--minor-color), 0));
