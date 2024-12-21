@@ -119,7 +119,6 @@ const onLogin = () => {
   LoginApi.login({name: username.value, email: email.value})
       .then((res) => {
         if (res.code === 0) {
-          console.log(res)
           localStorage.setItem('x-token', res.data.token)
           localStorage.setItem('userId', res.data.userId)
           localStorage.setItem('userName', res.data.userName)

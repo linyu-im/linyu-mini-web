@@ -8,31 +8,42 @@
             消息列表
             <div class="close-btn" @click="showLeft = false">×</div>
           </div>
-          <div class="chat-list-item black">
+          <div
+              class="chat-list-item black"
+              @click="()=>{targetId='1';closeMask()}"
+          >
             <div class="chat-item-avatar"></div>
             <linyu-avatar text="群" size="40px" :color="2" class="mr-[10px]"/>
             <div class="chat-item-content">
               <div class="flex items-center mb-[5px]">
-                <div class="chat-content-name">linyu在线聊天群</div>
+                <div class="chat-content-name">{{ groupChat?.targetInfo?.name }}</div>
                 <linyu-dot-hint text="99"/>
               </div>
-              <div class="chat-content-msg">这是一条消息</div>
-            </div>
-          </div>
-          <div class="text-[rgba(var(--text-color),0.7)] font-[600] mb-[5px]">私聊</div>
-          <div class="chat-list-content">
-            <div class="chat-list-item blue">
-              <div class="chat-item-avatar"></div>
-              <div class="chat-item-content">
-                <div class="chat-content-name">linyu聊天群</div>
-                <div class="chat-content-msg">这是一条消息</div>
+              <div v-if="groupChat?.lastMessage" class="chat-content-msg">
+                {{ groupChat?.lastMessage?.fromInfo?.name }}
+                :
+                {{ groupChat?.lastMessage?.message }}
               </div>
             </div>
-            <div class="chat-list-item white">
-              <div class="chat-item-avatar"></div>
+          </div>
+          <div v-if="privateChatList?.length>0"
+               class="text-[rgba(var(--text-color),0.7)] font-[600] mb-[5px]"
+          >
+            私聊
+          </div>
+          <div class="chat-list-content">
+            <div v-for="item in privateChatList"
+                 :key="item.id"
+                 :class="['chat-list-item', targetId === item.targetId ? 'blue' : 'white']"
+                 @click="()=>{targetId=item.targetId;currentSelectTarget=item;closeMask()}"
+            >
+              <linyu-avatar :text="item.targetInfo.name" size="40px" class="mr-[10px]"/>
               <div class="chat-item-content">
-                <div class="chat-content-name">linyu聊天群</div>
-                <div class="chat-content-msg">这是一条消息</div>
+                <div class="flex items-center mb-[5px]">
+                  <div class="chat-content-name">{{ item.targetInfo.name }}</div>
+                  <linyu-dot-hint text="99"/>
+                </div>
+                <div class="chat-content-msg">{{ item.lastMessage?.message }}</div>
               </div>
             </div>
           </div>
@@ -45,7 +56,12 @@
             <div class="menu-btn" @click="showLeft = true">
               <i class="iconfont icon-liebiao text-[24px]"/>
             </div>
-            linyu在线聊天群（{{ userListMap.size }}）
+            <div v-if="targetId==='1'">
+              {{ groupChat?.targetInfo.name }}（{{ userListMap.size }}）
+            </div>
+            <div v-else>
+              {{ currentSelectTarget?.targetInfo?.name }}
+            </div>
             <div class="menu-btn" @click="showRight = true">
               <i class="iconfont icon-shezhi text-[24px]"/>
             </div>
@@ -55,18 +71,37 @@
 
               <div v-for="(item) in msgRecord" class="msg-item" :key="item.id"
                    :class="{right:item.fromId===currentUserId}">
-                <linyu-avatar v-if="item.fromId!==currentUserId" :text="item.fromInfo.name" size="40px"
-                              class="mr-[5px]"/>
-                <div class="msg-box">
-                  <div class="msg-username">
-                    {{ item.fromInfo.name }}
+                <template v-if="item.fromId!==currentUserId">
+                  <linyu-avatar :text="item.fromInfo?.name" size="40px"
+                                class="mr-[5px]"/>
+                  <div class="msg-box">
+                    <div class="flex items-center">
+                      <div class="msg-username">
+                        {{ item.fromInfo?.name }}
+                      </div>
+                      <div class="mgs-ip ml-[2px]">[{{ item.fromInfo.ipOwnership ?? "未知" }}]</div>
+                    </div>
+                    <div class="msg-content">
+                      {{ item.message }}
+                    </div>
                   </div>
-                  <div class="msg-content">
-                    {{ item.message }}
+                </template>
+
+                <template v-else>
+                  <div class="msg-box">
+                    <div class="flex items-center">
+                      <div class="mgs-ip mr-[2px]">[{{ item.fromInfo.ipOwnership ?? "未知" }}]</div>
+                      <div class="msg-username">
+                        {{ item.fromInfo.name }}
+                      </div>
+                    </div>
+                    <div class="msg-content">
+                      {{ item.message }}
+                    </div>
                   </div>
-                </div>
-                <linyu-avatar v-if="item.fromId===currentUserId" :text="item.fromInfo.name" size="40px"
-                              class="ml-[5px]"/>
+                  <linyu-avatar v-if="item.fromId===currentUserId" :text="item.fromInfo.name" size="40px"
+                                class="ml-[5px]"/>
+                </template>
               </div>
 
             </div>
@@ -103,17 +138,23 @@
                    class="online-list-item"
                    :key="item.id"
                    :class="{odd:index%2===0}">
-                <div class="w-[40px] h-[40px] relative">
-                  <linyu-avatar :text="item.name" size="40px"/>
-                  <div v-if="item.status?.length" class="online-status"/>
+                <div class="online-item-content">
+                  <div class="w-[40px] h-[40px] relative">
+                    <linyu-avatar :text="item.name" size="40px"/>
+                    <div v-if="item.status?.length" class="online-status"/>
+                  </div>
+                  <div class="online-username">{{ item.name }}</div>
+                  <linyu-tooltip v-if="item.status?.includes('web')" content="浏览器在线" class="ml-[2px]">
+                    <img src="/badge/web-online.png" alt="" class="h-[18px]" draggable="false">
+                  </linyu-tooltip>
+                  <linyu-tooltip v-if="item.status?.includes('ssh')" content="SSH在线" class="ml-[2px]">
+                    <img src="/badge/ssh-online.png" alt="" class="h-[18px]">
+                  </linyu-tooltip>
                 </div>
-                <div class="ml-[10px] font-[600] text-[rgb(var(--text-color))]">{{ item.name }}</div>
-                <linyu-tooltip v-if="item.status?.includes('web')" content="浏览器在线" class="ml-[2px]">
-                  <img src="/badge/web-online.png" alt="" class="h-[18px]" draggable="false">
-                </linyu-tooltip>
-                <linyu-tooltip v-if="item.status?.includes('ssh')" content="SSH在线" class="ml-[2px]">
-                  <img src="/badge/ssh-online.png" alt="" class="h-[18px]">
-                </linyu-tooltip>
+                <div class="online-item-operation ml-[20px]">
+                  <linyu-text-button v-if="item.id!==currentUserId" text="私聊"
+                                     @click="()=>{onCreatePrivateChat(item.id);closeMask()}"/>
+                </div>
               </div>
             </div>
           </div>
@@ -138,6 +179,7 @@ import EventBus from "@/utils/eventBus.js";
 import UserApi from "@/api/user.js";
 import LinyuTooltip from "@/components/LinyuTooltip.vue";
 import ws from "@/utils/ws.js";
+import LinyuTextButton from "@/components/LinyuTextButton.vue";
 
 const themeStore = useThemeStore();
 const router = useRouter();
@@ -147,15 +189,17 @@ const currentUserId = localStorage.getItem('userId')
 const currentUserName = localStorage.getItem('userName')
 const showLeft = ref(false)
 const showRight = ref(false)
-const groupChat = reactive({unreadCount: 0, lastMessage: {message: ""}})
+const groupChat = ref()
 const msgRecord = ref([])
 const targetId = ref("1")
+const currentSelectTarget = ref(null)
 const msgContent = ref('')
 const chatShowAreaRef = ref()
 const isLoading = ref(false)
 const isComplete = ref(false)
 const userListMap = ref(new Map())
 const onlineCount = ref(0)
+const privateChatList = ref([])
 
 const handleScroll = () => {
   if (chatShowAreaRef.value) {
@@ -165,15 +209,39 @@ const handleScroll = () => {
   }
 };
 
+//接收到消息
 const handlerReceiveMsg = (data) => {
+  handlerUpdateChatList(data)
   if (data.fromId === currentUserId) return
   if (targetId.value === data.fromId ||
       (data.source === 'group' && targetId.value === "1")) {
     msgRecord.value.push(data)
+    recordIndex++
     scrollToBottom()
   }
 }
 
+//更新聊天列表信息
+const handlerUpdateChatList = (message) => {
+  if (message.fromId === "1" || message.toId === "1") {
+    groupChat.value.lastMessage = message
+    return;
+  }
+  let i = 0
+  while (i < privateChatList.value.length) {
+    let chat = privateChatList.value[i]
+    if (message.fromId === chat.targetId || message.toId === chat.targetId) {
+      chat.lastMessage = message
+      break;
+    }
+    i++
+  }
+  if (i >= privateChatList.value.length) {
+    onGetPrivateChatList()
+  }
+}
+
+//接收到通知
 const handlerReceiveNotify = (data) => {
   let user = userListMap.value.get(data.content.id);
   if (!user) {
@@ -206,6 +274,7 @@ onMounted(async () => {
     chatShowAreaRef.value.addEventListener('scroll', handleScroll);
   }
   onGetGroupChat()
+  onGetPrivateChatList()
   await onGetUserListMap()
   await onGetOnlineWeb()
   EventBus.on('on-receive-notify', handlerReceiveNotify)
@@ -237,7 +306,7 @@ const onGetMsgRecord = () => {
     if (res.code === 0) {
       const newMessages = res.data;
       if (newMessages.length > 0) {
-        msgRecord.value = [...newMessages, ...msgRecord.value];
+        msgRecord.value = [...newMessages.reverse(), ...msgRecord.value];
         recordIndex += newMessages.length;
         nextTick(() => {
           if (recordIndex === newMessages.length) {
@@ -262,6 +331,10 @@ const onGetMsgRecord = () => {
 
 watch(targetId,
     () => {
+      recordIndex = 0
+      msgRecord.value = []
+      isComplete.value = false
+      isLoading.value = false
       onGetMsgRecord()
     },
     {immediate: true},
@@ -283,8 +356,7 @@ const handlerLogout = () => {
 const onGetGroupChat = () => {
   ChatListApi.group().then(res => {
     if (res.code === 0) {
-      groupChat.unreadCount = res.data.unreadCount
-      groupChat.lastMessage = JSON.parse(res.data.lastMessage ?? "{}")
+      groupChat.value = res.data
     }
   })
 }
@@ -299,6 +371,7 @@ const onSendMsg = () => {
   }).then(res => {
     if (res.code === 0) {
       msgRecord.value.push(res.data)
+      recordIndex++
       msgContent.value = ''
       scrollToBottom()
     }
@@ -350,6 +423,24 @@ const handlerUserListSort = () => {
   onlineCount.value = onlineNum
 };
 
+//获取私聊列表
+const onGetPrivateChatList = () => {
+  ChatListApi.privateList().then(res => {
+    if (res.code === 0) {
+      privateChatList.value = res.data
+    }
+  })
+}
+
+//创建私聊
+const onCreatePrivateChat = (id) => {
+  ChatListApi.create({targetId: id}).then(res => {
+    if (res.code === 0) {
+      targetId.value = id
+      onGetPrivateChatList()
+    }
+  })
+}
 </script>
 
 
@@ -601,6 +692,14 @@ const handlerUserListSort = () => {
                 font-weight: 600;
                 letter-spacing: 0.5px;
               }
+
+              .mgs-ip {
+                color: rgba(var(--text-color), 0.6);
+                margin-bottom: 2px;
+                user-select: none;
+                font-size: 12px;
+                font-weight: 600;
+              }
             }
 
 
@@ -722,25 +821,62 @@ const handlerUserListSort = () => {
           .online-list-item {
             height: 50px;
             border-radius: 5px;
-            background-image: linear-gradient(to right, rgba(var(--minor-color), 0.4), rgba(var(--minor-color), 0));
+            background-image: linear-gradient(to right, rgba(var(--minor-color), 0.2), rgba(var(--minor-color), 0));
             margin-bottom: 5px;
             display: flex;
             align-items: center;
+            justify-content: space-between;
             padding: 10px;
 
-            .online-status {
-              position: absolute;
-              width: 12px;
-              height: 12px;
-              border-radius: 10px;
-              right: 0;
-              bottom: 0;
-              background-color: rgb(var(--primary-color));
-              border: #FFFFFF 2px solid;
+            .online-item-content {
+              display: flex;
+              align-items: center;
+
+              .online-username {
+                max-width: 100px;
+                margin-left: 10px;
+                font-weight: 600;
+                color: rgb(var(--text-color));
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+              }
+
+              .online-status {
+                position: absolute;
+                width: 12px;
+                height: 12px;
+                border-radius: 10px;
+                right: 0;
+                bottom: 0;
+                background-color: rgb(var(--primary-color));
+                border: #FFFFFF 2px solid;
+              }
+            }
+
+            .online-item-operation {
+              align-items: center;
+              opacity: 0;
+              transition: opacity 0.5s ease;
+              pointer-events: none;
             }
 
             &.odd {
-              background-image: linear-gradient(to left, rgba(var(--minor-color), 0.4), rgba(var(--minor-color), 0));
+              background-image: linear-gradient(to left, rgba(var(--minor-color), 0.2), rgba(var(--minor-color), 0));
+            }
+
+            &:hover {
+              .online-item-operation {
+                opacity: 1;
+                pointer-events: auto;
+              }
+            }
+
+            @media screen and (max-width: 900px) {
+              .online-item-operation {
+                opacity: 1;
+                pointer-events: auto;
+              }
             }
           }
         }

@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const IP = '127.0.0.1:9090';
+const IP = '127.0.0.1:9200';
 const SERVICE_URL = 'http://' + IP;
 export {SERVICE_URL, IP};
 

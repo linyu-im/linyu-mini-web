@@ -5,7 +5,7 @@ export default {
         return Http.get("/api/v1/chat-list/group");
     },
     privateList() {
-        return Http.get("/api/v1/chat-list/private/list");
+        return Http.get("/api/v1/chat-list/list/private");
     },
     create(param) {
         return Http.post("/api/v1/chat-list/create", param);
