@@ -2,8 +2,12 @@
   <input :type="props.type"
          class="linyu-input"
          :placeholder="props.placeholder"
-         :style="`width:${props.width};border-radius:${props.radius}`"
-         v-model="value"/>
+         :style="`width:${props.width};
+         border-radius:${props.radius};
+         height:${props.height};
+         font-size:${props.fontSize}`"
+         v-model="value"
+  />
 </template>
 
 <script setup>
@@ -15,10 +19,18 @@ const props = defineProps({
     type: String,
     default: '100%',
   },
+  height: {
+    type: String,
+    default: '50px',
+  },
+  fontSize: {
+    type: String,
+    default: '18px',
+  },
   radius: {
     type: String,
     default: '5px',
-  }
+  },
 })
 const value = defineModel('value')
 </script>

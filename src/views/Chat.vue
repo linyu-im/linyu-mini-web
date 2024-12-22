@@ -47,6 +47,15 @@
               </div>
             </div>
           </div>
+          <div class="mb-[10px]">
+            <linyu-card-carousel
+                :play="true"
+                :images="[{key:'github',img:'/github-bg.png'},
+                {key:'bili',img:'/bili-bg.png'},
+                {key:'qq',img:'/qq-bg.png'}]"
+                @click="(card)=>handlerCardClick(card)"
+            />
+          </div>
         </div>
         <!-- 遮罩层 -->
         <div class="mask" v-if="showLeft || showRight" @click="closeMask"></div>
@@ -56,12 +65,12 @@
             <div class="menu-btn" @click="showLeft = true">
               <i class="iconfont icon-liebiao text-[24px]"/>
             </div>
-            <div v-if="targetId==='1'">
+            <template v-if="targetId==='1'">
               {{ groupChat?.targetInfo.name }}（{{ userListMap.size }}）
-            </div>
-            <div v-else>
+            </template>
+            <template v-else>
               {{ currentSelectTarget?.targetInfo?.name }}
-            </div>
+            </template>
             <div class="menu-btn" @click="showRight = true">
               <i class="iconfont icon-shezhi text-[24px]"/>
             </div>
@@ -131,10 +140,13 @@
           <div class="right-content">
             <div class="flex justify-between items-center mb-[10px]">
               <div class="text-[rgb(var(--text-color))] text-[14px] font-[600]">在线人数（{{ onlineCount }}）</div>
-              <div class="w-[140px] h-[30px] bg-[#F9FBFF] rounded-[30px]"></div>
+              <linyu-input placeholder="搜索用户"
+                           height="30px" width="140px" radius="40px" font-size="14px"
+                           v-model:value="userSearchValue"
+              />
             </div>
             <div class="online-list">
-              <div v-for="(item,index) in userListMap.values()"
+              <div v-for="(item,index) in userList"
                    class="online-list-item"
                    :key="item.id"
                    :class="{odd:index%2===0}">
@@ -165,7 +177,7 @@
 </template>
 
 <script setup>
-import {nextTick, onMounted, onUnmounted, reactive, ref, watch} from 'vue'
+import {computed, nextTick, onMounted, onUnmounted, reactive, ref, watch} from 'vue'
 import {useThemeStore} from "@/stores/useThemeStore.js";
 import IconButton from "@/components/IconButton.vue";
 import {toggleDark} from "@/utils/theme.js";
@@ -180,10 +192,12 @@ import UserApi from "@/api/user.js";
 import LinyuTooltip from "@/components/LinyuTooltip.vue";
 import ws from "@/utils/ws.js";
 import LinyuTextButton from "@/components/LinyuTextButton.vue";
+import LinyuCardCarousel from "@/components/LinyuCardCarousel.vue";
+import {useToast} from '@/components/ToastProvider.vue';
 
 const themeStore = useThemeStore();
 const router = useRouter();
-
+const showToast = useToast()
 let recordIndex = 0;
 const currentUserId = localStorage.getItem('userId')
 const currentUserName = localStorage.getItem('userName')
@@ -200,6 +214,7 @@ const isComplete = ref(false)
 const userListMap = ref(new Map())
 const onlineCount = ref(0)
 const privateChatList = ref([])
+const userSearchValue = ref('')
 
 const handleScroll = () => {
   if (chatShowAreaRef.value) {
@@ -208,6 +223,15 @@ const handleScroll = () => {
     }
   }
 };
+
+const userList = computed(() => {
+  const values = Array.from(userListMap.value.values());
+  if (userSearchValue.value) {
+    return values.filter(item => item.name.includes(userSearchValue.value));
+  } else {
+    return values;
+  }
+})
 
 //接收到消息
 const handlerReceiveMsg = (data) => {
@@ -292,6 +316,22 @@ const scrollToBottom = () => {
     nextTick(() => chatShowAreaRef.value.scrollTop = chatShowAreaRef.value.scrollHeight);
   }
 };
+
+//卡片点击
+const handlerCardClick = (card) => {
+  switch (card.key) {
+    case 'bili':
+      window.open('https://space.bilibili.com/135427028/channel/series', '_blank')
+      break;
+    case 'github':
+      window.open('https://github.com/linyu-im', '_blank')
+      break;
+    case 'qq':
+      navigator.clipboard.writeText("729158695")
+      showToast("QQ群号，已复制到粘贴板~")
+      break;
+  }
+}
 
 //获取聊天记录
 const onGetMsgRecord = () => {
@@ -514,6 +554,15 @@ const onCreatePrivateChat = (id) => {
         }
       }
 
+      .vcard {
+        cursor: pointer;
+        height: 60px;
+        border-radius: 5px;
+        background-size: cover;
+        background-repeat: no-repeat;
+        background-position: center;
+      }
+
       .chat-list-title {
         color: rgb(var(--text-color));
         height: 60px;
@@ -529,7 +578,6 @@ const onCreatePrivateChat = (id) => {
         }
       }
 
-
       .chat-list-item {
         height: 60px;
         margin-bottom: 5px;
@@ -538,6 +586,7 @@ const onCreatePrivateChat = (id) => {
         align-items: center;
         padding: 10px;
         cursor: pointer;
+        user-select: none;
 
         .chat-item-content {
           display: flex;
@@ -590,13 +639,15 @@ const onCreatePrivateChat = (id) => {
 
       }
 
-      .chat-list-content {
-        flex: 1;
-        overflow-y: scroll;
-        padding-right: 5px;
-        margin-right: -10px;
-      }
 
+    }
+
+    .chat-list-content {
+      flex: 1;
+      overflow-y: scroll;
+      padding-right: 5px;
+      margin-right: -10px;
+      margin-bottom: 20px;
     }
 
     .box-middle {
