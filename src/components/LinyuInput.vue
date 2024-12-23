@@ -5,7 +5,8 @@
          :style="`width:${props.width};
          border-radius:${props.radius};
          height:${props.height};
-         font-size:${props.fontSize}`"
+         font-size:${props.fontSize};
+         padding:${props.padding}`"
          v-model="value"
   />
 </template>
@@ -31,6 +32,10 @@ const props = defineProps({
     type: String,
     default: '5px',
   },
+  padding: {
+    type: String,
+    default: '0 10px',
+  }
 })
 const value = defineModel('value')
 </script>

@@ -22,7 +22,7 @@ const props = defineProps({
   .recall-content {
     padding: 2px 10px;
     background-color: rgba(var(--background-color));
-    border-radius: 10px;
+    border-radius: 5px;
     color: rgba(var(--text-color), 0.5);
     font-size: 12px;
     display: flex;

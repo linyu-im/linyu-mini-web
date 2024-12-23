@@ -8,12 +8,12 @@
           @mouseleave="hideMenu"
       >
         <linyu-tooltip content="引用">
-          <linyu-icon-button size="24px" font-size="16px" icon="icon-yinyong"/>
+          <linyu-icon-button @click="handlerSetReference" size="24px" font-size="16px" icon="icon-yinyong"/>
         </linyu-tooltip>
         <linyu-tooltip content="撤回">
           <linyu-icon-button @click="onRecallMsg" size="24px" font-size="16px" icon="icon-chehui"/>
         </linyu-tooltip>
-        <linyu-tooltip content="复制">
+        <linyu-tooltip @click="handlerCopy" content="复制">
           <linyu-icon-button size="24px" font-size="16px" icon="icon-fuzhi"/>
         </linyu-tooltip>
       </div>
@@ -33,11 +33,11 @@
           @mouseenter="showMenu"
           @mouseleave="hideMenu"
       >
-        <linyu-tooltip content="复制">
+        <linyu-tooltip @click="handlerCopy" content="复制">
           <linyu-icon-button size="24px" font-size="16px" icon="icon-fuzhi"/>
         </linyu-tooltip>
         <linyu-tooltip content="引用">
-          <linyu-icon-button size="24px" font-size="16px" icon="icon-yinyong"/>
+          <linyu-icon-button @click="handlerSetReference" size="24px" font-size="16px" icon="icon-yinyong"/>
         </linyu-tooltip>
       </div>
     </transition>
@@ -50,8 +50,10 @@ import LinyuIconButton from "@/components/LinyuIconButton.vue";
 import LinyuTooltip from "@/components/LinyuTooltip.vue";
 import MessageApi from "@/api/message.js";
 import {useToast} from '@/components/ToastProvider.vue';
+import {chatMsgStore} from "@/stores/ChatMsgStore.js";
 
 const showToast = useToast()
+const msgStore = chatMsgStore();
 
 const props = defineProps({
   msg: Object,
@@ -85,6 +87,14 @@ const onRecallMsg = () => {
     }
   })
 }
+
+const handlerSetReference = () => {
+  msgStore.setReferenceMsg(props.msg)
+}
+
+const handlerCopy = () => {
+  navigator.clipboard.writeText(props.msg.message)
+}
 </script>
 
 <style lang="less" scoped>
@@ -117,7 +127,7 @@ const onRecallMsg = () => {
     border-radius: 10px;
     background-color: rgba(var(--background-color), 0.5);
     user-select: none;
-    border: white 2px solid;
+    border: rgba(255, 255, 255, 0.8) 2px solid;
     display: flex;
     align-items: center;
     justify-content: space-between;

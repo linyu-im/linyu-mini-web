@@ -95,7 +95,19 @@
               </div>
             </div>
             <div class="chat-input-area">
-              <linyu-input v-model:value="msgContent" width="80%" radius="50px"/>
+              <div class="chat-input">
+                <div v-if="msgStore.referenceMsg" class="reference-msg">
+                  <div class="reference-msg-content">
+                    {{ msgStore.referenceMsg.fromInfo.name }} : {{ msgStore.referenceMsg.message }}
+                  </div>
+                  <div class="ml-[10px]">
+                    <linyu-icon-button @click="msgStore.referenceMsg=null"
+                                       size="20px" font-size="12px"
+                                       icon="icon-shanchu"/>
+                  </div>
+                </div>
+                <linyu-input padding="0px 0px" font-size="16px" height="auto" v-model:value="msgContent"/>
+              </div>
               <div class="publish-button" @click="onSendMsg">
                 <i class="iconfont icon-fasong2 text-[28px]"/>
               </div>
@@ -122,7 +134,7 @@
             <div class="flex justify-between items-center mb-[10px]">
               <div class="text-[rgb(var(--text-color))] text-[14px] font-[600]">在线人数（{{ onlineCount }}）</div>
               <linyu-input placeholder="搜索用户"
-                           height="30px" width="140px" radius="40px" font-size="14px"
+                           height="30px" width="140px" radius="5px" font-size="14px"
                            v-model:value="userSearchValue"
               />
             </div>
@@ -158,7 +170,7 @@
 </template>
 
 <script setup>
-import {computed, nextTick, onMounted, onUnmounted, reactive, ref, watch} from 'vue'
+import {computed, nextTick, onMounted, onUnmounted, ref, watch} from 'vue'
 import {useThemeStore} from "@/stores/useThemeStore.js";
 import {toggleDark} from "@/utils/theme.js";
 import LinyuInput from "@/components/LinyuInput.vue";
@@ -176,8 +188,10 @@ import LinyuCardCarousel from "@/components/LinyuCardCarousel.vue";
 import {useToast} from '@/components/ToastProvider.vue';
 import LinyuIconButton from "@/components/LinyuIconButton.vue";
 import LinyuMsg from "@/components/Msg/LinyuMsg.vue";
+import {chatMsgStore} from "@/stores/ChatMsgStore.js";
 
-const themeStore = useThemeStore();
+const themeStore = useThemeStore()
+const msgStore = chatMsgStore()
 const router = useRouter();
 const showToast = useToast()
 let recordIndex = 0;
@@ -198,6 +212,15 @@ const onlineCount = ref(0)
 const privateChatList = ref([])
 const userSearchValue = ref('')
 const currentNewMsgCount = ref(0)
+
+msgStore.$subscribe((mutation) => {
+  const {scrollTop, clientHeight, scrollHeight} = chatShowAreaRef.value;
+  const isBottom = scrollTop + clientHeight >= scrollHeight - 1
+  if (isBottom) {
+    scrollToBottom()
+  }
+});
+
 
 const handleScroll = () => {
   if (chatShowAreaRef.value) {
@@ -427,11 +450,13 @@ const onSendMsg = () => {
     targetId: targetId.value,
     source: targetId.value === '1' ? 'group' : 'user',
     msgContent: msgContent.value,
+    referenceMsgId: msgStore.referenceMsg?.id
   }).then(res => {
     if (res.code === 0) {
       msgRecord.value.push(res.data)
       recordIndex++
       msgContent.value = ''
+      msgStore.referenceMsg = null
       scrollToBottom()
     }
   })
@@ -550,7 +575,7 @@ const onCreatePrivateChat = (id) => {
     height: 90%;
     display: flex;
     position: relative;
-    min-width: min-content;
+    min-width: 0;
 
     @media screen and (max-width: 900px) {
       width: 95%;
@@ -769,11 +794,42 @@ const onCreatePrivateChat = (id) => {
         }
 
         .chat-input-area {
-          height: 80px;
           display: flex;
           align-items: center;
           justify-content: center;
           padding: 0 10px;
+          margin: 15px 0;
+
+          .chat-input {
+            width: 80%;
+            background-color: rgba(var(--background-color));
+            border-radius: 10px;
+            overflow: hidden;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+
+            .reference-msg {
+              font-size: 14px;
+              display: flex;
+              align-items: center;
+              justify-content: space-between;
+              height: 30px;
+              background-color: rgba(var(--text-color), 0.1);
+              color: rgba(var(--text-color), 0.9);
+              border-radius: 5px;
+              padding: 10px;
+              margin-bottom: 5px;
+              user-select: none;
+
+              .reference-msg-content {
+                overflow: hidden;
+                white-space: nowrap;
+                text-overflow: ellipsis;
+                word-break: break-word;
+              }
+            }
+          }
 
           .publish-button {
             height: 55px;
@@ -786,6 +842,7 @@ const onCreatePrivateChat = (id) => {
             align-items: center;
             color: #FFFFFF;
             cursor: pointer;
+            margin-left: 10px;
           }
         }
       }
