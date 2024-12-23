@@ -59,7 +59,7 @@ import {ref} from "vue"
 import {useThemeStore} from "@/stores/useThemeStore.js"
 import LinyuInput from "@/components/LinyuInput.vue"
 import {toggleDark} from "@/utils/theme.js"
-import IconButton from "@/components/IconButton.vue"
+import IconButton from "@/components/LinyuIconButton.vue"
 import {useToast} from '@/components/ToastProvider.vue';
 import {useRouter} from "vue-router"
 import LoginApi from "@/api/login.js";

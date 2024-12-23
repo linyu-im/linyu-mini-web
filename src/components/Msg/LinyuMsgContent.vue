@@ -1,0 +1,141 @@
+<template>
+  <div class="msg" :class="{ right: props.right }">
+    <transition v-if="right" name="fade">
+      <div
+          v-if="isShowMenu"
+          class="msg-menu mr-[5px]"
+          @mouseenter="showMenu"
+          @mouseleave="hideMenu"
+      >
+        <linyu-tooltip content="引用">
+          <linyu-icon-button size="24px" font-size="16px" icon="icon-yinyong"/>
+        </linyu-tooltip>
+        <linyu-tooltip content="撤回">
+          <linyu-icon-button @click="onRecallMsg" size="24px" font-size="16px" icon="icon-chehui"/>
+        </linyu-tooltip>
+        <linyu-tooltip content="复制">
+          <linyu-icon-button size="24px" font-size="16px" icon="icon-fuzhi"/>
+        </linyu-tooltip>
+      </div>
+    </transition>
+    <div
+        class="msg-content"
+        :class="{ right: props.right }"
+        @mouseenter="showMenu"
+        @mouseleave="hideMenu"
+    >
+      {{ props.msg.message }}
+    </div>
+    <transition v-if="!right" name="fade">
+      <div
+          v-if="isShowMenu"
+          class="msg-menu ml-[5px]"
+          @mouseenter="showMenu"
+          @mouseleave="hideMenu"
+      >
+        <linyu-tooltip content="复制">
+          <linyu-icon-button size="24px" font-size="16px" icon="icon-fuzhi"/>
+        </linyu-tooltip>
+        <linyu-tooltip content="引用">
+          <linyu-icon-button size="24px" font-size="16px" icon="icon-yinyong"/>
+        </linyu-tooltip>
+      </div>
+    </transition>
+  </div>
+</template>
+
+<script setup>
+import {ref} from "vue";
+import LinyuIconButton from "@/components/LinyuIconButton.vue";
+import LinyuTooltip from "@/components/LinyuTooltip.vue";
+import MessageApi from "@/api/message.js";
+import {useToast} from '@/components/ToastProvider.vue';
+
+const showToast = useToast()
+
+const props = defineProps({
+  msg: Object,
+  right: {type: Boolean, default: false},
+});
+
+const isShowMenu = ref(false);
+let hideTimeout = null;
+
+const showMenu = () => {
+  if (hideTimeout) {
+    clearTimeout(hideTimeout);
+    hideTimeout = null;
+  }
+  isShowMenu.value = true;
+};
+
+const hideMenu = () => {
+  hideTimeout = setTimeout(() => {
+    isShowMenu.value = false;
+    clearTimeout(hideTimeout);
+    hideTimeout = null;
+  }, 200);
+};
+
+//撤回消息
+const onRecallMsg = () => {
+  MessageApi.recall({msgId: props.msg.id}).then(res => {
+    if (res.code !== 0) {
+      showToast(res.msg, true)
+    }
+  })
+}
+</script>
+
+<style lang="less" scoped>
+.msg {
+  position: relative;
+  width: 100%;
+  display: flex;
+
+  .msg-content {
+    display: inline-block;
+    word-break: break-word;
+    max-width: 50%;
+    background-color: white;
+    padding: 8px;
+    border-radius: 0 10px 10px 10px;
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+
+    &.right {
+      border-radius: 10px 0 10px 10px;
+      background-color: rgb(var(--primary-color));
+      color: white;
+    }
+  }
+
+  .msg-menu {
+    padding: 0 10px;
+    height: 30px;
+    border-radius: 10px;
+    background-color: rgba(var(--background-color), 0.5);
+    user-select: none;
+    border: white 2px solid;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 2px;
+  }
+
+  &.right {
+    justify-content: end;
+  }
+}
+
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.5s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+</style>

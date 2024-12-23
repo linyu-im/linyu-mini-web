@@ -1,7 +1,6 @@
 <template>
   <div
       class="tooltip-container"
-      :data-theme="themeStore.theme"
       :style="{ fontSize: `${fontSize}px` }"
       @mouseover="showTooltip"
       @mouseleave="hideTooltip"
@@ -19,6 +18,7 @@
             class="tooltip"
             :class="`tooltip-${position}`"
             v-if="visible"
+            :data-theme="themeStore.theme"
             :style="{
               fontSize: `${fontSize}px`,
               left: tooltipPosition.x + 'px',

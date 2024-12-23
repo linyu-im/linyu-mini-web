@@ -23,7 +23,7 @@
               <div v-if="groupChat?.lastMessage" class="chat-content-msg">
                 {{ groupChat?.lastMessage?.fromInfo?.name }}
                 :
-                {{ groupChat?.lastMessage?.message }}
+                {{ groupChat?.lastMessage?.type === 'recall' ? "撤回一条消息" : groupChat?.lastMessage?.message }}
               </div>
             </div>
           </div>
@@ -44,7 +44,11 @@
                   <div class="chat-content-name">{{ item.targetInfo.name }}</div>
                   <linyu-dot-hint v-if="item?.unreadCount>0&&targetId!==item.targetId" :text="item.unreadCount"/>
                 </div>
-                <div class="chat-content-msg">{{ item.lastMessage?.message }}</div>
+                <div class="chat-content-msg">
+                  {{
+                    item.lastMessage === 'recall' ? "撤回一条消息" : item.lastMessage?.message
+                  }}
+                </div>
               </div>
             </div>
           </div>
@@ -80,37 +84,7 @@
             <div class="chat-show-area" ref="chatShowAreaRef">
               <div v-for="(item) in msgRecord" class="msg-item" :key="item.id"
                    :class="{right:item.fromId===currentUserId}">
-                <template v-if="item.fromId!==currentUserId">
-                  <linyu-avatar :text="item.fromInfo?.name" size="40px"
-                                class="mr-[5px]"/>
-                  <div class="msg-box">
-                    <div class="flex items-center">
-                      <div class="msg-username">
-                        {{ item.fromInfo?.name }}
-                      </div>
-                      <div class="mgs-ip ml-[2px]">[{{ item.fromInfo.ipOwnership ?? "未知" }}]</div>
-                    </div>
-                    <div class="msg-content">
-                      {{ item.message }}
-                    </div>
-                  </div>
-                </template>
-
-                <template v-else>
-                  <div class="msg-box">
-                    <div class="flex items-center">
-                      <div class="mgs-ip mr-[2px]">[{{ item.fromInfo.ipOwnership ?? "未知" }}]</div>
-                      <div class="msg-username">
-                        {{ item.fromInfo.name }}
-                      </div>
-                    </div>
-                    <div class="msg-content">
-                      {{ item.message }}
-                    </div>
-                  </div>
-                  <linyu-avatar v-if="item.fromId===currentUserId" :text="item.fromInfo.name" size="40px"
-                                class="ml-[5px]"/>
-                </template>
+                <linyu-msg :msg="item"/>
               </div>
               <div v-if="currentNewMsgCount>0"
                    class="new-msg-count"
@@ -137,9 +111,11 @@
               <div class="user-name">{{ currentUserName }}</div>
             </div>
             <div class="flex">
-              <icon-button v-if="themeStore.theme==='light'" @click="(e)=>toggleDark(e,'dark')" icon="icon-taiyang"/>
-              <icon-button v-if="themeStore.theme==='dark'" @click="(e)=>toggleDark(e,'light')" icon="icon-yueliang"/>
-              <icon-button @click="handlerLogout" icon="icon-tuichu"/>
+              <linyu-icon-button v-if="themeStore.theme==='light'" @click="(e)=>toggleDark(e,'dark')"
+                                 icon="icon-taiyang"/>
+              <linyu-icon-button v-if="themeStore.theme==='dark'" @click="(e)=>toggleDark(e,'light')"
+                                 icon="icon-yueliang"/>
+              <linyu-icon-button @click="handlerLogout" icon="icon-tuichu"/>
             </div>
           </div>
           <div class="right-content">
@@ -184,7 +160,6 @@
 <script setup>
 import {computed, nextTick, onMounted, onUnmounted, reactive, ref, watch} from 'vue'
 import {useThemeStore} from "@/stores/useThemeStore.js";
-import IconButton from "@/components/IconButton.vue";
 import {toggleDark} from "@/utils/theme.js";
 import LinyuInput from "@/components/LinyuInput.vue";
 import {useRouter} from "vue-router";
@@ -199,6 +174,8 @@ import ws from "@/utils/ws.js";
 import LinyuTextButton from "@/components/LinyuTextButton.vue";
 import LinyuCardCarousel from "@/components/LinyuCardCarousel.vue";
 import {useToast} from '@/components/ToastProvider.vue';
+import LinyuIconButton from "@/components/LinyuIconButton.vue";
+import LinyuMsg from "@/components/Msg/LinyuMsg.vue";
 
 const themeStore = useThemeStore();
 const router = useRouter();
@@ -246,6 +223,10 @@ const userList = computed(() => {
 //接收到消息
 const handlerReceiveMsg = (data) => {
   handlerUpdateChatList(data)
+  if (data.type === 'recall') {
+    handlerReceiveRecallMsg(data)
+    return;
+  }
   if (data.fromId === currentUserId) return
 
   const {scrollTop, clientHeight, scrollHeight} = chatShowAreaRef.value;
@@ -501,6 +482,17 @@ const handlerUserListSort = () => {
   onlineCount.value = onlineNum
 };
 
+//接受到已撤回的消息
+const handlerReceiveRecallMsg = (msg) => {
+  for (let i = msgRecord.value.length - 1; i >= 0; i--) {
+    if (msgRecord.value[i].id === msg.id) {
+      msgRecord.value[i].type = msg.type
+      msgRecord.value[i].message = msg.message
+      break;
+    }
+  }
+}
+
 //获取私聊列表
 const onGetPrivateChatList = () => {
   ChatListApi.privateList().then(res => {
@@ -754,57 +746,6 @@ const onCreatePrivateChat = (id) => {
 
           .msg-item {
             display: flex;
-            margin-bottom: 15px;
-
-            .msg-box {
-              display: flex;
-              flex-direction: column;
-              align-items: flex-start;
-              width: 100%;
-
-              .msg-username {
-                color: rgba(var(--text-color), 0.7);
-                margin-bottom: 2px;
-                user-select: none;
-                font-size: 14px;
-                font-weight: 600;
-              }
-
-              .msg-content {
-                display: inline-block;
-                word-break: break-word;
-                max-width: 50%;
-                background-color: white;
-                padding: 8px;
-                border-radius: 0 10px 10px 10px;
-                font-size: 14px;
-                font-weight: 600;
-                letter-spacing: 0.5px;
-              }
-
-              .mgs-ip {
-                color: rgba(var(--text-color), 0.6);
-                margin-bottom: 2px;
-                user-select: none;
-                font-size: 12px;
-                font-weight: 600;
-              }
-            }
-
-
-            &.right {
-              justify-content: flex-end;
-
-              .msg-box {
-                align-items: flex-end;
-
-                .msg-content {
-                  border-radius: 10px 0 10px 10px;
-                  background-color: rgb(var(--primary-color));
-                  color: white;
-                }
-              }
-            }
           }
 
           .new-msg-count {

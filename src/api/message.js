@@ -7,4 +7,7 @@ export default {
     record(param) {
         return Http.post("/api/v1/message/record", param);
     },
+    recall(param) {
+        return Http.post("/api/v1/message/recall", param);
+    },
 };
