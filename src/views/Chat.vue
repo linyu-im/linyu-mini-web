@@ -17,7 +17,8 @@
             <div class="chat-item-content">
               <div class="flex items-center mb-[5px]">
                 <div class="chat-content-name">{{ groupChat?.targetInfo?.name }}</div>
-                <linyu-dot-hint text="99"/>
+                <linyu-dot-hint v-if="groupChat?.unreadCount>0&&targetId!==groupChat.targetId"
+                                :text="groupChat?.unreadCount"/>
               </div>
               <div v-if="groupChat?.lastMessage" class="chat-content-msg">
                 {{ groupChat?.lastMessage?.fromInfo?.name }}
@@ -41,7 +42,7 @@
               <div class="chat-item-content">
                 <div class="flex items-center mb-[5px]">
                   <div class="chat-content-name">{{ item.targetInfo.name }}</div>
-                  <linyu-dot-hint text="99"/>
+                  <linyu-dot-hint v-if="item?.unreadCount>0&&targetId!==item.targetId" :text="item.unreadCount"/>
                 </div>
                 <div class="chat-content-msg">{{ item.lastMessage?.message }}</div>
               </div>
@@ -77,7 +78,6 @@
           </div>
           <div class="middle-content">
             <div class="chat-show-area" ref="chatShowAreaRef">
-
               <div v-for="(item) in msgRecord" class="msg-item" :key="item.id"
                    :class="{right:item.fromId===currentUserId}">
                 <template v-if="item.fromId!==currentUserId">
@@ -112,9 +112,14 @@
                                 class="ml-[5px]"/>
                 </template>
               </div>
-
+              <div v-if="currentNewMsgCount>0"
+                   class="new-msg-count"
+                   @click="scrollToBottom"
+              >
+                <img alt="" class="h-[18px] mr-[5px]" src="/down.png">
+                {{ currentNewMsgCount }} 条新消息
+              </div>
             </div>
-
             <div class="chat-input-area">
               <linyu-input v-model:value="msgContent" width="80%" radius="50px"/>
               <div class="publish-button" @click="onSendMsg">
@@ -215,9 +220,14 @@ const userListMap = ref(new Map())
 const onlineCount = ref(0)
 const privateChatList = ref([])
 const userSearchValue = ref('')
+const currentNewMsgCount = ref(0)
 
 const handleScroll = () => {
   if (chatShowAreaRef.value) {
+    //最底部更新currentNewMsgCount为0
+    const {scrollTop, clientHeight, scrollHeight} = chatShowAreaRef.value;
+    const isBottom = scrollTop + clientHeight >= scrollHeight - 1
+    if (isBottom) currentNewMsgCount.value = 0
     if (chatShowAreaRef.value.scrollTop === 0 && !isLoading.value) {
       onGetMsgRecord();
     }
@@ -237,17 +247,27 @@ const userList = computed(() => {
 const handlerReceiveMsg = (data) => {
   handlerUpdateChatList(data)
   if (data.fromId === currentUserId) return
-  if (targetId.value === data.fromId ||
+
+  const {scrollTop, clientHeight, scrollHeight} = chatShowAreaRef.value;
+  const isBottom = scrollTop + clientHeight >= scrollHeight - 1
+
+  if ((data.source === 'user' && targetId.value === data.fromId) ||
       (data.source === 'group' && targetId.value === "1")) {
     msgRecord.value.push(data)
     recordIndex++
-    scrollToBottom()
+    //是否在最底部
+    if (isBottom) {
+      scrollToBottom()
+    } else {
+      currentNewMsgCount.value = currentNewMsgCount.value + 1
+    }
   }
 }
 
 //更新聊天列表信息
 const handlerUpdateChatList = (message) => {
   if (message.fromId === "1" || message.toId === "1") {
+    groupChat.value.unreadCount = groupChat.value.unreadCount + 1
     groupChat.value.lastMessage = message
     return;
   }
@@ -255,6 +275,7 @@ const handlerUpdateChatList = (message) => {
   while (i < privateChatList.value.length) {
     let chat = privateChatList.value[i]
     if (message.fromId === chat.targetId || message.toId === chat.targetId) {
+      chat.unreadCount = chat.unreadCount + 1
       chat.lastMessage = message
       break;
     }
@@ -369,13 +390,30 @@ const onGetMsgRecord = () => {
   });
 }
 
+//已读会话
+const onReadChatList = (id) => {
+  if (id === "1" && groupChat.value) {
+    groupChat.value.unreadCount = 0
+    return;
+  }
+  for (let i = 0; i < privateChatList.value.length; i++) {
+    let chat = privateChatList.value[i];
+    if (id === chat.targetId) {
+      chat.unreadCount = 0;
+      break;
+    }
+  }
+  ChatListApi.read({targetId: id});
+}
+
 watch(targetId,
-    () => {
+    (newValue, oldValue) => {
       recordIndex = 0
       msgRecord.value = []
       isComplete.value = false
       isLoading.value = false
       onGetMsgRecord()
+      onReadChatList(oldValue ?? newValue)
     },
     {immediate: true},
 )
@@ -767,6 +805,25 @@ const onCreatePrivateChat = (id) => {
                 }
               }
             }
+          }
+
+          .new-msg-count {
+            position: fixed;
+            right: 15px;
+            bottom: 80px;
+            padding: 4px 15px;
+            border-radius: 20px;
+            background-color: rgba(var(--background-color), 0.8);
+            backdrop-filter: blur(10px);
+            color: rgba(var(--primary-color));
+            font-size: 14px;
+            user-select: none;
+            border: rgba(var(--background-color)) 2px solid;
+            font-weight: 600;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
           }
         }
 

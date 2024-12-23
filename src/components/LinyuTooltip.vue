@@ -1,13 +1,14 @@
 <template>
   <div
       class="tooltip-container"
+      :data-theme="themeStore.theme"
       :style="{ fontSize: `${fontSize}px` }"
       @mouseover="showTooltip"
       @mouseleave="hideTooltip"
       ref="tooltipContainerRef"
   >
     <slot/>
-    <Teleport to="[data-theme]">
+    <Teleport to="body">
       <transition
           name="tooltip-fade"
           @before-enter="onBeforeEnter"
@@ -33,6 +34,9 @@
 
 <script setup>
 import {ref} from "vue";
+import {useThemeStore} from "@/stores/useThemeStore.js";
+
+const themeStore = useThemeStore();
 
 const props = defineProps({
   content: {

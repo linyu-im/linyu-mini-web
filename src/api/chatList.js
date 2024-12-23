@@ -10,4 +10,7 @@ export default {
     create(param) {
         return Http.post("/api/v1/chat-list/create", param);
     },
+    read(param) {
+        return Http.post("/api/v1/chat-list/read", param);
+    },
 };
