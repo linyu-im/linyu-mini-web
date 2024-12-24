@@ -1,5 +1,9 @@
 <template>
   <div class="chat-container">
+    <!--表情弹窗-->
+    <linyu-popup v-model:visible="isEmojiVisible" :position="emojiPosition">
+      <linyu-emoji-box @on-emoji="handlerOnEmoji"/>
+    </linyu-popup>
     <div class="chat-bg">
       <div class="chat-box">
         <!-- 左侧菜单 -->
@@ -12,7 +16,6 @@
               class="chat-list-item black"
               @click="()=>{targetId='1';closeMask()}"
           >
-            <div class="chat-item-avatar"></div>
             <linyu-avatar text="群" size="40px" :color="2" class="mr-[10px]"/>
             <div class="chat-item-content">
               <div class="flex items-center mb-[5px]">
@@ -21,9 +24,7 @@
                                 :text="groupChat?.unreadCount"/>
               </div>
               <div v-if="groupChat?.lastMessage" class="chat-content-msg">
-                {{ groupChat?.lastMessage?.fromInfo?.name }}
-                :
-                {{ groupChat?.lastMessage?.type === 'recall' ? "撤回一条消息" : groupChat?.lastMessage?.message }}
+                <linyu-chat-list-content :msg="groupChat?.lastMessage"/>
               </div>
             </div>
           </div>
@@ -45,9 +46,7 @@
                   <linyu-dot-hint v-if="item?.unreadCount>0&&targetId!==item.targetId" :text="item.unreadCount"/>
                 </div>
                 <div class="chat-content-msg">
-                  {{
-                    item.lastMessage === 'recall' ? "撤回一条消息" : item.lastMessage?.message
-                  }}
+                  <linyu-chat-list-content :is-group="false" :msg="item?.lastMessage"/>
                 </div>
               </div>
             </div>
@@ -97,18 +96,31 @@
             <div class="chat-input-area">
               <div class="chat-input">
                 <div v-if="msgStore.referenceMsg" class="reference-msg">
-                  <div class="reference-msg-content">
-                    {{ msgStore.referenceMsg.fromInfo.name }} : {{ msgStore.referenceMsg.message }}
+                  <div class="reference-msg-content" v-if="msgStore.referenceMsg.type===MessageType.Text">
+                    {{ msgStore.referenceMsg.fromInfo.name }} :
+                    {{ msgStore.referenceMsg.message }}
+                  </div>
+                  <div v-if="msgStore.referenceMsg.type===MessageType.Emoji" class="flex items-center">
+                    <div> {{ msgStore.referenceMsg.fromInfo.name }} :</div>
+                    <emoji-msg height="40px" width="40px" :src="msgStore.referenceMsg.message"/>
                   </div>
                   <div class="ml-[10px]">
-                    <linyu-icon-button @click="msgStore.referenceMsg=null"
-                                       size="20px" font-size="12px"
-                                       icon="icon-shanchu"/>
+                    <linyu-icon-button
+                        @click="msgStore.referenceMsg=null"
+                        size="20px" font-size="12px"
+                        icon="icon-shanchu"/>
                   </div>
                 </div>
-                <linyu-input padding="0px 0px" font-size="16px" height="auto" v-model:value="msgContent"/>
+                <div class="flex items-center">
+                  <div class="emoji-button" @click="handlerSetEmojiBoxPosition">
+                    <div class="iconfont icon-biaoqing text-[28px]"/>
+                  </div>
+                  <linyu-input ref="msgInputRef"
+                               padding="0px 0px" font-size="16px" height="auto"
+                               v-model:value="msgContent"/>
+                </div>
               </div>
-              <div class="publish-button" @click="onSendMsg">
+              <div class="publish-button" @click="handlerSubmitMsg">
                 <i class="iconfont icon-fasong2 text-[28px]"/>
               </div>
             </div>
@@ -189,6 +201,12 @@ import {useToast} from '@/components/ToastProvider.vue';
 import LinyuIconButton from "@/components/LinyuIconButton.vue";
 import LinyuMsg from "@/components/Msg/LinyuMsg.vue";
 import {chatMsgStore} from "@/stores/ChatMsgStore.js";
+import LinyuPopup from "@/components/LinyuPopup.vue";
+import LinyuEmojiBox from "@/components/LinyuEmojiBox.vue";
+import EmojiMsg from "@/components/Msg/MsgContent/EmojiMsg.vue";
+import LinyuChatListContent from "@/components/Msg/LinyuChatListContent.vue";
+import {MessageType} from "@/constant/messageType.js";
+import {MessageSource} from "@/constant/messageSource.js";
 
 const themeStore = useThemeStore()
 const msgStore = chatMsgStore()
@@ -202,7 +220,7 @@ const showRight = ref(false)
 const groupChat = ref()
 const msgRecord = ref([])
 const targetId = ref("1")
-const currentSelectTarget = ref(null)
+const currentSelectTarget = ref()
 const msgContent = ref('')
 const chatShowAreaRef = ref()
 const isLoading = ref(false)
@@ -212,6 +230,10 @@ const onlineCount = ref(0)
 const privateChatList = ref([])
 const userSearchValue = ref('')
 const currentNewMsgCount = ref(0)
+const isEmojiVisible = ref(false)
+const emojiPosition = ref()
+const msgInputRef = ref()
+
 
 msgStore.$subscribe((mutation) => {
   const {scrollTop, clientHeight, scrollHeight} = chatShowAreaRef.value;
@@ -243,10 +265,42 @@ const userList = computed(() => {
   }
 })
 
+const handlerSetEmojiBoxPosition = (e) => {
+  const rect = e.target.getBoundingClientRect()
+  emojiPosition.value = {top: rect.top, left: rect.left}
+  isEmojiVisible.value = !isEmojiVisible.value
+}
+
+const handlerOnEmoji = (emoji, type) => {
+  isEmojiVisible.value = false
+  if (type === 'text') {
+    //emoji文本
+    const textarea = msgInputRef.value.getInput()
+    if (!textarea) return
+    const start = textarea.selectionStart
+    const end = textarea.selectionEnd
+    const before = msgContent.value.substring(0, start)
+    const after = msgContent.value.substring(end)
+    msgContent.value = before + emoji + after
+    nextTick(() => {
+      const newPosition = start + emoji.length
+      textarea.setSelectionRange(newPosition, newPosition)
+      textarea.focus()
+    })
+  } else {
+    //图片链接
+    let msg = {
+      content: emoji,
+      type: 'emoji'
+    }
+    onSendMsg(msg)
+  }
+}
+
 //接收到消息
 const handlerReceiveMsg = (data) => {
   handlerUpdateChatList(data)
-  if (data.type === 'recall') {
+  if (data.type === MessageType.Recall) {
     handlerReceiveRecallMsg(data)
     return;
   }
@@ -255,8 +309,8 @@ const handlerReceiveMsg = (data) => {
   const {scrollTop, clientHeight, scrollHeight} = chatShowAreaRef.value;
   const isBottom = scrollTop + clientHeight >= scrollHeight - 1
 
-  if ((data.source === 'user' && targetId.value === data.fromId) ||
-      (data.source === 'group' && targetId.value === "1")) {
+  if ((data.source === MessageSource.User && targetId.value === data.fromId) ||
+      (data.source === MessageSource.Group && targetId.value === "1")) {
     msgRecord.value.push(data)
     recordIndex++
     //是否在最底部
@@ -443,14 +497,23 @@ const onGetGroupChat = () => {
   })
 }
 
-//发送消息
-const onSendMsg = () => {
+const handlerSubmitMsg = () => {
   if (!msgContent.value) return
+  let msg = {
+    content: msgContent.value,
+    type: MessageType.Text
+  }
+  onSendMsg(msg)
+}
+
+//发送消息
+const onSendMsg = (msg) => {
   MessageApi.send({
     targetId: targetId.value,
-    source: targetId.value === '1' ? 'group' : 'user',
-    msgContent: msgContent.value,
-    referenceMsgId: msgStore.referenceMsg?.id
+    source: targetId.value === '1' ? MessageSource.Group : MessageSource.User,
+    msgContent: msg.content,
+    referenceMsgId: msgStore.referenceMsg?.id,
+    type: msg.type,
   }).then(res => {
     if (res.code === 0) {
       msgRecord.value.push(res.data)
@@ -647,6 +710,8 @@ const onCreatePrivateChat = (id) => {
           display: flex;
           flex-direction: column;
           justify-content: space-between;
+          flex: 1;
+          overflow: hidden;
 
           .chat-content-name {
             font-size: 14px;
@@ -654,8 +719,12 @@ const onCreatePrivateChat = (id) => {
           }
 
           .chat-content-msg {
+            width: 100%;
             font-size: 12px;
             color: rgba(255, 255, 255, 0.8);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
           }
         }
 
@@ -809,16 +878,27 @@ const onCreatePrivateChat = (id) => {
             display: flex;
             flex-direction: column;
 
+            .emoji-button {
+              width: 28px;
+              height: 28px;
+              user-select: none;
+              cursor: pointer;
+              display: flex;
+              justify-content: center;
+              align-items: center;
+              color: rgba(var(--text-color), 0.5);
+              margin-right: 10px;
+            }
+
             .reference-msg {
               font-size: 14px;
               display: flex;
               align-items: center;
               justify-content: space-between;
-              height: 30px;
               background-color: rgba(var(--text-color), 0.1);
               color: rgba(var(--text-color), 0.9);
               border-radius: 5px;
-              padding: 10px;
+              padding: 5px 10px;
               margin-bottom: 5px;
               user-select: none;
 

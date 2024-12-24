@@ -15,12 +15,9 @@
             <div class="mgs-ip ml-[2px]">[{{ props.msg.fromInfo.ipOwnership ?? "未知" }}]</div>
           </div>
           <linyu-msg-content :right="right" :msg="props.msg"/>
+          <!--引用信息-->
           <div class="msg-box-info-reference" v-if="props.msg.referenceMsg">
-            <div class="font-[600]">
-              {{ props.msg.referenceMsg?.fromInfo?.name }} : {{
-                props.msg.referenceMsg?.message
-              }}
-            </div>
+            <linyu-reference-content :msg="props.msg.referenceMsg"/>
             <i class="iconfont icon-zhiding ml-[10px]"/>
           </div>
         </div>
@@ -36,11 +33,7 @@
           <linyu-msg-content :right="right" :msg="props.msg"/>
           <div class="msg-box-info-reference" v-if="props.msg.referenceMsg">
             <i class="iconfont icon-zhiding mr-[10px]"/>
-            <div class="font-[600]">
-              {{ props.msg.referenceMsg?.fromInfo?.name }} : {{
-                props.msg.referenceMsg?.message
-              }}
-            </div>
+            <linyu-reference-content :msg="props.msg.referenceMsg"/>
           </div>
         </div>
         <linyu-avatar v-if="right" :text="props.msg.fromInfo.name" size="40px"
@@ -54,6 +47,7 @@
 import LinyuMsgContent from "@/components/Msg/LinyuMsgContent.vue";
 import LinyuAvatar from "@/components/LinyuAvatar.vue";
 import RecallMsg from "@/components/Msg/MsgContent/RecallMsg.vue";
+import LinyuReferenceContent from "@/components/Msg/LinyuReferenceContent.vue";
 
 const currentUserId = localStorage.getItem('userId')
 

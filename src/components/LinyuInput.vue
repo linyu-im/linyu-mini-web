@@ -1,18 +1,23 @@
 <template>
-  <input :type="props.type"
-         class="linyu-input"
-         :placeholder="props.placeholder"
-         :style="`width:${props.width};
+  <input
+      ref="inputRef"
+      :type="props.type"
+      class="linyu-input"
+      :placeholder="props.placeholder"
+      :style="`width:${props.width};
          border-radius:${props.radius};
          height:${props.height};
          font-size:${props.fontSize};
          padding:${props.padding}`"
-         v-model="value"
+      v-model="value"
   />
 </template>
 
 <script setup>
 
+import {ref} from "vue";
+
+const inputRef = ref()
 const props = defineProps({
   placeholder: String,
   type: String,
@@ -38,6 +43,15 @@ const props = defineProps({
   }
 })
 const value = defineModel('value')
+
+defineExpose({
+  focus() {
+    inputRef.value?.focus()
+  },
+  getInput() {
+    return inputRef.value
+  }
+})
 </script>
 
 <style scoped lang="less">

@@ -24,7 +24,12 @@
         @mouseenter="showMenu"
         @mouseleave="hideMenu"
     >
-      {{ props.msg.message }}
+      <div v-if="props.msg.type===MessageType.Text">
+        {{ props.msg.message }}
+      </div>
+      <div v-if="props.msg.type===MessageType.Emoji">
+        <emoji-msg :src="props.msg.message"/>
+      </div>
     </div>
     <transition v-if="!right" name="fade">
       <div
@@ -51,6 +56,8 @@ import LinyuTooltip from "@/components/LinyuTooltip.vue";
 import MessageApi from "@/api/message.js";
 import {useToast} from '@/components/ToastProvider.vue';
 import {chatMsgStore} from "@/stores/ChatMsgStore.js";
+import EmojiMsg from "@/components/Msg/MsgContent/EmojiMsg.vue";
+import {MessageType} from "@/constant/messageType.js";
 
 const showToast = useToast()
 const msgStore = chatMsgStore();

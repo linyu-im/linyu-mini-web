@@ -60,8 +60,7 @@ const tooltipPosition = ref({x: 0, y: 0});
 
 const calculatePosition = (event) => {
   const element = event.target.getBoundingClientRect();
-  const offset = element.height + 2;
-
+  const offset = element.height / 2 + 8;
   switch (props.position) {
     case 'top':
       return {
