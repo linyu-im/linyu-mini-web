@@ -10,6 +10,7 @@
          font-size:${props.fontSize};
          padding:${props.padding}`"
       v-model="value"
+      @keydown.enter="(e)=>emit('keydown.enter',e)"
   />
 </template>
 
@@ -52,6 +53,8 @@ defineExpose({
     return inputRef.value
   }
 })
+
+const emit = defineEmits(['keydown.enter'])
 </script>
 
 <style scoped lang="less">

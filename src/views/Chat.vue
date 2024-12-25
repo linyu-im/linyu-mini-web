@@ -117,7 +117,9 @@
                   </div>
                   <linyu-input ref="msgInputRef"
                                padding="0px 0px" font-size="16px" height="auto"
-                               v-model:value="msgContent"/>
+                               v-model:value="msgContent"
+                               @keydown.enter="handlerSubmitMsg"
+                  />
                 </div>
               </div>
               <div class="publish-button" @click="handlerSubmitMsg">

@@ -18,7 +18,10 @@
             <div class="text-[18px] text-[rgba(var(--text-color),0.7)] leading-[20px]">欢迎使用林语mini</div>
           </div>
           <div class="info">
-            <linyu-input v-model:value="password" placeholder="请输入群聊密码" type="password"/>
+            <linyu-input v-model:value="password"
+                         placeholder="请输入群聊密码"
+                         type="password"
+                         @keydown.enter="onVerifyPassword"/>
           </div>
           <div
               @click="onVerifyPassword"
@@ -35,8 +38,12 @@
           </div>
           <div class=" info
             ">
-            <linyu-input v-model:value="username" class="mb-[10px]" placeholder="用户名"/>
-            <linyu-input v-model:value="email" placeholder="邮箱"/>
+            <linyu-input v-model:value="username"
+                         class="mb-[10px]"
+                         placeholder="用户名"
+                         @keydown.enter="onLogin"
+            />
+            <linyu-input v-model:value="email" placeholder="邮箱" @keydown.enter="onLogin"/>
           </div>
           <div
               @click="onLogin"
@@ -61,15 +68,17 @@ import LinyuInput from "@/components/LinyuInput.vue"
 import {toggleDark} from "@/utils/theme.js"
 import IconButton from "@/components/LinyuIconButton.vue"
 import {useToast} from '@/components/ToastProvider.vue';
-import {useRouter} from "vue-router"
+import {useRoute, useRouter} from "vue-router"
 import LoginApi from "@/api/login.js";
 import {JSEncrypt} from "jsencrypt";
 
 const themeStore = useThemeStore()
 const router = useRouter()
+const route = useRoute();
+
 const logging = ref(false)
 const isVerifySuccess = ref(false)
-const password = ref('')
+const password = ref(route.query.p)
 const username = ref('')
 const email = ref('')
 const showToast = useToast()

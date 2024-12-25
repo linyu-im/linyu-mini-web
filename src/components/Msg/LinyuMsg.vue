@@ -1,9 +1,12 @@
 <template>
   <div class="msg-box" :class="{right:right}">
+    <template>
+    </template>
+    <time-msg v-if="props.msg.isShowTime" :content="props.msg.createTime" class="mb-[10px]"/>
     <template v-if="msg.type==='recall'">
       <recall-msg :msg="msg"/>
     </template>
-    <template v-else>
+    <div v-else class="flex">
       <template v-if="!right">
         <linyu-avatar :text="props.msg.fromInfo?.name" size="40px"
                       class="mr-[5px]"/>
@@ -39,7 +42,7 @@
         <linyu-avatar v-if="right" :text="props.msg.fromInfo.name" size="40px"
                       class="ml-[5px]"/>
       </template>
-    </template>
+    </div>
   </div>
 </template>
 <script setup>
@@ -48,6 +51,7 @@ import LinyuMsgContent from "@/components/Msg/LinyuMsgContent.vue";
 import LinyuAvatar from "@/components/LinyuAvatar.vue";
 import RecallMsg from "@/components/Msg/MsgContent/RecallMsg.vue";
 import LinyuReferenceContent from "@/components/Msg/LinyuReferenceContent.vue";
+import TimeMsg from "@/components/Msg/MsgContent/TimeMsg.vue";
 
 const currentUserId = localStorage.getItem('userId')
 
@@ -63,6 +67,7 @@ const right = props.msg.fromId === currentUserId
   display: flex;
   margin-bottom: 20px;
   width: 100%;
+  flex-direction: column;
 
   .msg-box-info {
     display: flex;
