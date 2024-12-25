@@ -1,9 +1,8 @@
 import axios from 'axios';
 import {useGlobalStore} from "@/stores/useGlobalStore.js";
 
-const IP = '127.0.0.1:9200';
-const SERVICE_URL = 'http://' + IP;
-export {SERVICE_URL, IP};
+const SERVICE_URL = import.meta.env.VITE_HTTP_URL;
+export {SERVICE_URL};
 
 // request 请求之前
 axios.interceptors.request.use((config) => {

@@ -51,8 +51,7 @@ function connect(tokenStr) {
     isConnect = true;
     token = tokenStr;
     try {
-        let wsIp = localStorage.getItem("serverWs");
-        wsIp = wsIp ? wsIp : "ws://127.0.0.1:9100";
+        const wsIp = import.meta.env.VITE_WS_URL;
         ws = new WebSocket(wsIp + "/ws?x-token=" + token);
 
         ws.onopen = () => {
