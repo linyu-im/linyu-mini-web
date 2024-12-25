@@ -55,12 +55,12 @@ import LinyuIconButton from "@/components/LinyuIconButton.vue";
 import LinyuTooltip from "@/components/LinyuTooltip.vue";
 import MessageApi from "@/api/message.js";
 import {useToast} from '@/components/ToastProvider.vue';
-import {chatMsgStore} from "@/stores/ChatMsgStore.js";
+import {useChatMsgStore} from "@/stores/useChatMsgStore.js";
 import EmojiMsg from "@/components/Msg/MsgContent/EmojiMsg.vue";
 import {MessageType} from "@/constant/messageType.js";
 
 const showToast = useToast()
-const msgStore = chatMsgStore();
+const msgStore = useChatMsgStore();
 
 const props = defineProps({
   msg: Object,

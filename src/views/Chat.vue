@@ -200,7 +200,7 @@ import LinyuCardCarousel from "@/components/LinyuCardCarousel.vue";
 import {useToast} from '@/components/ToastProvider.vue';
 import LinyuIconButton from "@/components/LinyuIconButton.vue";
 import LinyuMsg from "@/components/Msg/LinyuMsg.vue";
-import {chatMsgStore} from "@/stores/ChatMsgStore.js";
+import {useChatMsgStore} from "@/stores/useChatMsgStore.js";
 import LinyuPopup from "@/components/LinyuPopup.vue";
 import LinyuEmojiBox from "@/components/LinyuEmojiBox.vue";
 import EmojiMsg from "@/components/Msg/MsgContent/EmojiMsg.vue";
@@ -209,7 +209,7 @@ import {MessageType} from "@/constant/messageType.js";
 import {MessageSource} from "@/constant/messageSource.js";
 
 const themeStore = useThemeStore()
-const msgStore = chatMsgStore()
+const msgStore = useChatMsgStore()
 const router = useRouter();
 const showToast = useToast()
 let recordIndex = 0;
