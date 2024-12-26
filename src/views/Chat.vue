@@ -83,7 +83,7 @@
             <div class="chat-show-area" ref="chatShowAreaRef">
               <div v-for="(item) in msgRecord" class="msg-item" :key="item.id"
                    :class="{right:item.fromId===currentUserId}">
-                <linyu-msg :msg="item"/>
+                <linyu-msg :msg="item" :user="userListMap.get(item.fromId)"/>
               </div>
               <div v-if="currentNewMsgCount>0"
                    class="new-msg-count"
@@ -221,7 +221,7 @@ const showLeft = ref(false)
 const showRight = ref(false)
 const groupChat = ref()
 const msgRecord = ref([])
-const targetId = ref("1")
+const targetId = ref()
 const currentSelectTarget = ref()
 const msgContent = ref('')
 const chatShowAreaRef = ref()
@@ -382,6 +382,7 @@ onMounted(async () => {
   onGetPrivateChatList()
   await onGetUserListMap()
   await onGetOnlineWeb()
+  targetId.value = "1"
   EventBus.on('on-receive-notify', handlerReceiveNotify)
   handlerUserListSort();
 })

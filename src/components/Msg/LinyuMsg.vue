@@ -15,7 +15,18 @@
           <div class="msg-username">
             {{ props.msg.fromInfo?.name }}
           </div>
-          <div class="mgs-ip ml-[2px]">[{{ props.msg.fromInfo.ipOwnership ?? "未知" }}]</div>
+          <div class="mgs-ip ml-[2px] mr-[2px]">[{{ props.msg.fromInfo.ipOwnership ?? "未知" }}]</div>
+          <!--用户徽章-->
+          <div v-for="item in props.user.badge" class="flex">
+            <linyu-tooltip :content="badges[item].des">
+              <img class="mr-[1px] ml-[1px]"
+                   width="22px" height="22px"
+                   :src="`/badge/${badges[item].icon}`"
+                   alt=""
+                   draggable="false"
+              >
+            </linyu-tooltip>
+          </div>
         </div>
         <!--消息内容-->
         <linyu-msg-content :right="right" :msg="props.msg"/>
@@ -35,12 +46,20 @@ import LinyuAvatar from "@/components/LinyuAvatar.vue";
 import RecallMsg from "@/components/Msg/MsgContent/RecallMsg.vue";
 import LinyuReferenceContent from "@/components/Msg/LinyuReferenceContent.vue";
 import TimeMsg from "@/components/Msg/MsgContent/TimeMsg.vue";
+import LinyuTooltip from "@/components/LinyuTooltip.vue";
 
 const currentUserId = localStorage.getItem('userId')
 
 const props = defineProps({
-  msg: Object
+  msg: Object,
+  user: Object,
 })
+
+const badges = {
+  "crown": {icon: "crown.png", des: "~首屈一指~"},
+  "clover": {icon: "clover.png", des: "~初出茅庐~"},
+  "diamond": {icon: "diamond.png", des: "~历久弥新~"},
+}
 
 const right = props.msg.fromId === currentUserId
 
@@ -64,7 +83,7 @@ const right = props.msg.fromId === currentUserId
       .mgs-box-user-info {
         display: flex;
         align-items: center;
-        margin-bottom: 2px;
+        height: 30px;
 
         &.right {
           flex-direction: row-reverse;
@@ -72,7 +91,6 @@ const right = props.msg.fromId === currentUserId
 
         .msg-username {
           color: rgba(var(--text-color), 0.7);
-          margin-bottom: 2px;
           user-select: none;
           font-size: 14px;
           font-weight: 600;
@@ -80,7 +98,6 @@ const right = props.msg.fromId === currentUserId
 
         .mgs-ip {
           color: rgba(var(--text-color), 0.6);
-          margin-bottom: 2px;
           user-select: none;
           font-size: 12px;
           font-weight: 600;
