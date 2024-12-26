@@ -1,23 +1,5 @@
 <template>
   <div class="msg" :class="{ right: props.right }">
-    <transition v-if="right" name="fade">
-      <div
-          v-if="isShowMenu"
-          class="msg-menu mr-[5px]"
-          @mouseenter="showMenu"
-          @mouseleave="hideMenu"
-      >
-        <linyu-tooltip content="引用">
-          <linyu-icon-button @click="handlerSetReference" size="24px" font-size="16px" icon="icon-yinyong"/>
-        </linyu-tooltip>
-        <linyu-tooltip content="撤回">
-          <linyu-icon-button @click="onRecallMsg" size="24px" font-size="16px" icon="icon-chehui"/>
-        </linyu-tooltip>
-        <linyu-tooltip @click="handlerCopy" content="复制">
-          <linyu-icon-button size="24px" font-size="16px" icon="icon-fuzhi"/>
-        </linyu-tooltip>
-      </div>
-    </transition>
     <div
         class="msg-content"
         :class="{ right: props.right }"
@@ -31,18 +13,22 @@
         <emoji-msg :src="props.msg.message"/>
       </div>
     </div>
-    <transition v-if="!right" name="fade">
+    <!--消息相关操作-->
+    <transition name="fade">
       <div
           v-if="isShowMenu"
-          class="msg-menu ml-[5px]"
+          class="msg-menu mr-[5px] ml-[5px]"
           @mouseenter="showMenu"
           @mouseleave="hideMenu"
       >
-        <linyu-tooltip @click="handlerCopy" content="复制">
-          <linyu-icon-button size="24px" font-size="16px" icon="icon-fuzhi"/>
-        </linyu-tooltip>
         <linyu-tooltip content="引用">
           <linyu-icon-button @click="handlerSetReference" size="24px" font-size="16px" icon="icon-yinyong"/>
+        </linyu-tooltip>
+        <linyu-tooltip v-if="right" content="撤回">
+          <linyu-icon-button @click="onRecallMsg" size="24px" font-size="16px" icon="icon-chehui"/>
+        </linyu-tooltip>
+        <linyu-tooltip @click="handlerCopy" content="复制">
+          <linyu-icon-button size="24px" font-size="16px" icon="icon-fuzhi"/>
         </linyu-tooltip>
       </div>
     </transition>
@@ -143,6 +129,7 @@ const handlerCopy = () => {
 
   &.right {
     justify-content: end;
+    flex-direction: row-reverse;
   }
 }
 
