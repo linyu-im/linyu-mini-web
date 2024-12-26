@@ -584,8 +584,8 @@ const handlerReceiveRecallMsg = (msg) => {
 }
 
 //获取私聊列表
-const onGetPrivateChatList = () => {
-  ChatListApi.privateList().then(res => {
+const onGetPrivateChatList = async () => {
+  await ChatListApi.privateList().then(res => {
     if (res.code === 0) {
       privateChatList.value = res.data
     }
@@ -594,10 +594,11 @@ const onGetPrivateChatList = () => {
 
 //创建私聊
 const onCreatePrivateChat = (id) => {
-  ChatListApi.create({targetId: id}).then(res => {
+  ChatListApi.create({targetId: id}).then(async res => {
     if (res.code === 0) {
+      currentSelectTarget.value = res.data
+      await onGetPrivateChatList()
       targetId.value = id
-      onGetPrivateChatList()
     }
   })
 }

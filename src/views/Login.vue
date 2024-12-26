@@ -7,8 +7,8 @@
       <icon-button v-if="themeStore.theme==='dark'" @click="(e)=>toggleDark(e,'light')" icon="icon-yueliang"/>
     </div>
     <div class="login-bg">
-      <img alt="" :src="`/poster-${themeStore.theme}.png`" class="poster-img">
-      <img class="logo" alt="" :src="`/title-${themeStore.theme}.png`">
+      <img alt="" :src="`/poster-${themeStore.theme}.png`" class="poster-img" draggable="false">
+      <img class="logo" alt="" :src="`/title-${themeStore.theme}.png`" draggable="false">
       <div class="login-content">
         <div v-if="!isVerifySuccess" class="login-box">
           <div class="title">

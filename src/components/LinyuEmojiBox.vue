@@ -50,7 +50,7 @@ const handlerEmoji = (emoji) => {
 
   @media screen and (max-width: 400px) {
     width: 80%;
-    height: 80%;
+    height: 260px;
   }
 
   .emoji-content {
