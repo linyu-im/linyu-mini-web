@@ -1,5 +1,5 @@
 <template>
-  <div v-if="msg?.message" class="chat-list-msg-content">
+  <div class="chat-list-msg-content">
     <div v-if="props.isGroup">{{ `${msg?.fromInfo?.name}&nbsp;:&nbsp;` }}</div>
 
     <div v-if="msg?.type===MessageType.Text">
@@ -12,7 +12,6 @@
       <emoji-msg :src="msg?.message" height="18px" width="18px" padding="0"/>
     </div>
   </div>
-
 </template>
 <script setup>
 

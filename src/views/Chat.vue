@@ -501,7 +501,7 @@ const onGetGroupChat = () => {
 }
 
 const handlerSubmitMsg = () => {
-  if (!msgContent.value) return
+  if (!msgContent.value.toString().trim()) return
   let msg = {
     content: msgContent.value,
     type: MessageType.Text

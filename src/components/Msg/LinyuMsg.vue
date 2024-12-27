@@ -31,9 +31,9 @@
         <!--消息内容-->
         <linyu-msg-content :right="right" :msg="props.msg"/>
         <!--引用信息-->
-        <div class="msg-box-info-reference" v-if="props.msg.referenceMsg">
+        <div class="msg-box-info-reference" v-if="props.msg.referenceMsg" :class="{right:right}">
           <linyu-reference-content :msg="props.msg.referenceMsg"/>
-          <i class="iconfont icon-zhiding ml-[10px]"/>
+          <i class="iconfont icon-zhiding ml-[5px]"/>
         </div>
       </div>
     </div>
@@ -116,6 +116,15 @@ const right = props.msg.fromId === currentUserId
         font-size: 14px;
         color: rgba(var(--text-color), 0.7);
         border: rgba(var(--text-color), 0.07) 1px solid;;
+
+        &.right {
+          flex-direction: row-reverse;
+
+          i {
+            margin-right: 10px;
+            margin-left: 0;
+          }
+        }
       }
     }
 
