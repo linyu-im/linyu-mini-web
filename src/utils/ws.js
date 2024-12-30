@@ -11,7 +11,6 @@ let isConnect = false;
 
 function response(event) {
     if (event.type !== 'message') {
-        console.log(event);
         onCloseHandler();
         return;
     }

@@ -7,7 +7,7 @@
         @mouseleave="hideMenu"
     >
       <div v-if="props.msg.type===MessageType.Text">
-        {{ props.msg.message }}
+        <text-msg :msg="props.msg" :right="right"/>
       </div>
       <div v-if="props.msg.type===MessageType.Emoji">
         <emoji-msg :src="props.msg.message"/>
@@ -44,6 +44,8 @@ import {useToast} from '@/components/ToastProvider.vue';
 import {useChatMsgStore} from "@/stores/useChatMsgStore.js";
 import EmojiMsg from "@/components/Msg/MsgContent/EmojiMsg.vue";
 import {MessageType} from "@/constant/messageType.js";
+import TextMsg from "@/components/Msg/MsgContent/TextMsg.vue";
+import {TextContentType} from "@/constant/textContentType.js";
 
 const showToast = useToast()
 const msgStore = useChatMsgStore();
@@ -86,7 +88,22 @@ const handlerSetReference = () => {
 }
 
 const handlerCopy = () => {
-  navigator.clipboard.writeText(props.msg.message)
+  let msg = ''
+  if (props.msg.type === MessageType.Text) {
+    try {
+      const texts = JSON.parse(props.msg?.message);
+      texts.map((item) => {
+        if (item.type === TextContentType.At) {
+          msg += '@' + JSON.parse(item.content).name
+        } else {
+          msg += item.content
+        }
+      })
+    } catch (e) {
+      msg = props.msg?.message
+    }
+  }
+  navigator.clipboard.writeText(msg)
 }
 </script>
 

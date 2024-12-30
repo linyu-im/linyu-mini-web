@@ -1,9 +1,8 @@
 <template>
   <div class="chat-list-msg-content">
     <div v-if="props.isGroup">{{ `${msg?.fromInfo?.name}&nbsp;:&nbsp;` }}</div>
-
     <div v-if="msg?.type===MessageType.Text">
-      {{ msg?.message }}
+      <text-msg :msg="props.msg"/>
     </div>
     <div v-if="msg?.type===MessageType.Recall">
       撤回一条消息
@@ -17,6 +16,7 @@
 
 import EmojiMsg from "@/components/Msg/MsgContent/EmojiMsg.vue";
 import {MessageType} from "@/constant/messageType.js";
+import TextMsg from "@/components/Msg/MsgContent/TextMsg.vue";
 
 const props = defineProps({
   msg: Object,

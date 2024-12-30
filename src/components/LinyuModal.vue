@@ -1,6 +1,6 @@
 <template>
   <Transition name="fade">
-    <div v-if="isOpen" class="modal-overlay" @click="()=>console.log(21321321)">
+    <div v-if="isOpen" class="modal-overlay">
       <div @click.stop>
         <slot/>
       </div>

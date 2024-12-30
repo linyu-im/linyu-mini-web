@@ -115,11 +115,15 @@
                   <div class="emoji-button" @click="handlerSetEmojiBoxPosition">
                     <div class="iconfont icon-biaoqing text-[28px]"/>
                   </div>
-                  <linyu-input ref="msgInputRef"
-                               padding="0px 0px" font-size="16px" height="auto"
-                               v-model:value="msgContent"
-                               @keydown.enter="handlerSubmitMsg"
-                  />
+                  <div class="chat-msg-input">
+                    <linyu-msg-input
+                        v-model:value="msgContent"
+                        ref="msgInputRef"
+                        @send="handlerSubmitMsg"
+                        :user="userListAll"
+                        :is-at-popup="targetId==='1'"
+                    />
+                  </div>
                 </div>
               </div>
               <div class="publish-button" @click="handlerSubmitMsg">
@@ -209,6 +213,7 @@ import EmojiMsg from "@/components/Msg/MsgContent/EmojiMsg.vue";
 import LinyuChatListContent from "@/components/Msg/LinyuChatListContent.vue";
 import {MessageType} from "@/constant/messageType.js";
 import {MessageSource} from "@/constant/messageSource.js";
+import LinyuMsgInput from "@/components/LinyuMsgInput.vue";
 
 const themeStore = useThemeStore()
 const msgStore = useChatMsgStore()
@@ -267,6 +272,14 @@ const userList = computed(() => {
   }
 })
 
+const userListAll = computed(() => {
+  const values = [];
+  for (const [, value] of userListMap.value) {
+    values.push({name: value.name, id: value.id})
+  }
+  return values
+})
+
 const handlerSetEmojiBoxPosition = (e) => {
   const rect = e.target.getBoundingClientRect()
   emojiPosition.value = {top: rect.top, left: rect.left}
@@ -276,18 +289,8 @@ const handlerSetEmojiBoxPosition = (e) => {
 const handlerOnEmoji = (emoji, type) => {
   isEmojiVisible.value = false
   if (type === 'text') {
-    //emoji文本
-    const textarea = msgInputRef.value.getInput()
-    if (!textarea) return
-    const start = textarea.selectionStart
-    const end = textarea.selectionEnd
-    const before = msgContent.value.substring(0, start)
-    const after = msgContent.value.substring(end)
-    msgContent.value = before + emoji + after
     nextTick(() => {
-      const newPosition = start + emoji.length
-      textarea.setSelectionRange(newPosition, newPosition)
-      textarea.focus()
+      msgInputRef.value.insertInputText(emoji)
     })
   } else {
     //图片链接
@@ -469,6 +472,7 @@ const onReadChatList = (id) => {
 
 watch(targetId,
     (newValue, oldValue) => {
+      msgContent.value = ''
       recordIndex = 0
       msgRecord.value = []
       isComplete.value = false
@@ -503,7 +507,7 @@ const onGetGroupChat = () => {
 const handlerSubmitMsg = () => {
   if (!msgContent.value.toString().trim()) return
   let msg = {
-    content: msgContent.value,
+    content: JSON.stringify(msgInputRef.value.getNodeList()),
     type: MessageType.Text
   }
   onSendMsg(msg)
@@ -882,6 +886,11 @@ const onCreatePrivateChat = (id) => {
             display: flex;
             flex-direction: column;
 
+            .chat-msg-input {
+              flex: 1;
+              width: 0;
+            }
+
             .emoji-button {
               width: 28px;
               height: 28px;
@@ -892,6 +901,7 @@ const onCreatePrivateChat = (id) => {
               align-items: center;
               color: rgba(var(--text-color), 0.5);
               margin-right: 10px;
+              flex-shrink: 1;
             }
 
             .reference-msg {

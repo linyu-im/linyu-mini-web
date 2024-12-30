@@ -1,5 +1,5 @@
 <template>
-  <div v-if="visible" @mousedown.stop class="custom-overlay">
+  <div v-if="visible" @mousedown.stop class="linyu-popup" :class="{overlay:props.overlay}" @click="handlerOverlay">
     <div ref="contentRef"
          class="content"
          :style="{
@@ -20,6 +20,14 @@ import {nextTick, onBeforeUnmount, onMounted, ref, watch} from 'vue'
 
 const props = defineProps({
   position: Object,
+  isFocus: {
+    type: Boolean,
+    default: true
+  },
+  overlay: {
+    type: Boolean,
+    default: false
+  }
 })
 
 const top = ref(0)
@@ -32,12 +40,20 @@ const contentRef = ref()
 watch(() => visible.value, () => {
   if (visible.value) {
     nextTick(() => {
-      contentRef.value.focus()
+      if (props.isFocus)
+        contentRef.value.focus()
       top.value = props.position.top - contentRef.value.offsetHeight
       left.value = props.position.left
     })
   }
 })
+
+
+const handlerOverlay = () => {
+  if (props.overlay) {
+    handleBlur()
+  }
+}
 
 const handleBlur = () => {
   visible.value = false
@@ -58,10 +74,18 @@ onBeforeUnmount(() => {
 </script>
 
 <style lang="less" scoped>
-.custom-overlay {
+.linyu-popup {
   .content {
     position: absolute;
     z-index: 88;
+  }
+
+  &.overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
   }
 }
 </style>
