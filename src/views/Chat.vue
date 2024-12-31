@@ -16,7 +16,7 @@
               class="chat-list-item black"
               @click="()=>{targetId='1';closeMask()}"
           >
-            <linyu-avatar text="群" size="40px" :color="2" class="mr-[10px]"/>
+            <linyu-avatar :info="{name:'群'}" size="40px" :color="2" class="mr-[10px]"/>
             <div class="chat-item-content">
               <div class="flex items-center mb-[5px]">
                 <div class="chat-content-name">{{ groupChat?.targetInfo?.name }}</div>
@@ -39,7 +39,7 @@
                  :class="['chat-list-item', targetId === item.targetId ? 'blue' : 'white']"
                  @click="()=>{targetId=item.targetId;currentSelectTarget=item;closeMask()}"
             >
-              <linyu-avatar :text="item.targetInfo.name" size="40px" class="mr-[10px]"/>
+              <linyu-avatar :info="item.targetInfo" size="40px" class="mr-[10px]"/>
               <div class="chat-item-content">
                 <div class="flex items-center mb-[5px]">
                   <div class="chat-content-name">{{ item.targetInfo.name }}</div>
@@ -137,7 +137,7 @@
         <div class="box-right" :class="{'show-right': showRight}">
           <div class="right-top">
             <div class="flex items-center">
-              <linyu-avatar :text="currentUserName" size="40px" class="mr-[5px]"/>
+              <linyu-avatar :info="{name:currentUserName}" size="40px" class="mr-[5px]"/>
               <div class="user-name">{{ currentUserName }}</div>
             </div>
             <div class="flex">
@@ -163,7 +163,7 @@
                    :class="{odd:index%2===0}">
                 <div class="online-item-content">
                   <div class="w-[40px] h-[40px] relative">
-                    <linyu-avatar :text="item.name" size="40px"/>
+                    <linyu-avatar :info="item" size="40px"/>
                     <div v-if="item.status?.length" class="online-status"/>
                   </div>
                   <div class="online-username">{{ item.name }}</div>
@@ -175,7 +175,7 @@
                   </linyu-tooltip>
                 </div>
                 <div class="online-item-operation ml-[20px]">
-                  <linyu-text-button v-if="item.id!==currentUserId" text="私聊"
+                  <linyu-text-button v-if="item.id!==currentUserId&&item.type!==UserType.Bot" text="私聊"
                                      @click="()=>{onCreatePrivateChat(item.id);closeMask()}"/>
                 </div>
               </div>
@@ -214,6 +214,7 @@ import LinyuChatListContent from "@/components/Msg/LinyuChatListContent.vue";
 import {MessageType} from "@/constant/messageType.js";
 import {MessageSource} from "@/constant/messageSource.js";
 import LinyuMsgInput from "@/components/LinyuMsgInput.vue";
+import {UserType} from "@/constant/userType.js";
 
 const themeStore = useThemeStore()
 const msgStore = useChatMsgStore()
@@ -275,7 +276,7 @@ const userList = computed(() => {
 const userListAll = computed(() => {
   const values = [];
   for (const [, value] of userListMap.value) {
-    values.push({name: value.name, id: value.id})
+    values.push({name: value.name, id: value.id, type: value.type})
   }
   return values
 })
@@ -420,7 +421,7 @@ const handlerCardClick = (card) => {
 
 //获取聊天记录
 const onGetMsgRecord = () => {
-  if (isLoading.value || isComplete.value) return;
+  if (isLoading.value || isComplete.value || !targetId.value) return;
   isLoading.value = true;
 
   const container = chatShowAreaRef.value;
@@ -554,9 +555,11 @@ const onGetOnlineWeb = async () => {
   });
 };
 
-//根据在线排序
+//排序
 const handlerUserListSort = () => {
   const sortedEntries = [...userListMap.value.entries()].sort(([, a], [, b]) => {
+    if (a?.type === UserType.Bot && b?.type !== UserType.Bot) return -1;
+    if (b?.type === UserType.Bot && a?.type !== UserType.Bot) return 1;
     const aStatus = a?.status || [];
     const bStatus = b?.status || [];
     const aStatusEmpty = aStatus.length === 0;
@@ -568,6 +571,9 @@ const handlerUserListSort = () => {
   userListMap.value = new Map(sortedEntries);
   let onlineNum = 0
   for (let [, value] of userListMap.value) {
+    if (value.type === UserType.Bot) {
+      continue
+    }
     if (value?.status?.length > 0) {
       onlineNum++
     } else {

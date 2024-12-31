@@ -1,14 +1,14 @@
 <template>
-  <div v-if="isArrayContents" class="text-msg">
-    <div v-for="item in contents" :key="item.id">
-      <div v-if="item.type===TextContentType.At" class="text-msg-at" :class="{right:right}">
+  <p v-if="isArrayContents" class="text-msg">
+    <template v-for="item in contents" :key="item.id">
+      <span v-if="item.type===TextContentType.At" class="text-msg-at" :class="{right:right}">
         {{ `@${getUserInfo(item.content).name}` }}
-      </div>
-      <div v-if="item.type===TextContentType.Text">
+      </span>
+      <span v-if="item.type===TextContentType.Text">
         {{ item.content }}
-      </div>
-    </div>
-  </div>
+      </span>
+    </template>
+  </p>
   <div v-else>
     {{ props.msg.message }}
   </div>
@@ -42,9 +42,6 @@ const getUserInfo = (content) => {
 
 <style lang="less" scoped>
 .text-msg {
-  display: flex;
-  align-items: center;
-
 
   .text-msg-at {
     color: rgba(var(--primary-color));
@@ -52,6 +49,7 @@ const getUserInfo = (content) => {
     margin: 0 2px;
     cursor: pointer;
     font-weight: 600;
+    display: inline-block;
 
     &.right {
       color: white;

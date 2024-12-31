@@ -7,7 +7,7 @@
       <recall-msg :msg="msg"/>
     </template>
     <div v-else class="msg-box-wrapper" :class="{right:right}">
-      <linyu-avatar :text="props.msg.fromInfo?.name" size="40px"
+      <linyu-avatar :info="props.msg.fromInfo" size="40px"
                     class="mr-[5px] ml-[5px]"/>
       <div class="msg-box-info">
         <!--用户信息-->
