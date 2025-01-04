@@ -98,7 +98,7 @@
                 <div v-if="msgStore.referenceMsg" class="reference-msg">
                   <div class="reference-msg-content" v-if="msgStore.referenceMsg.type===MessageType.Text">
                     {{ msgStore.referenceMsg.fromInfo.name }} :
-                    {{ msgStore.referenceMsg.message }}
+                    <text-msg :msg="msgStore.referenceMsg"/>
                   </div>
                   <div v-if="msgStore.referenceMsg.type===MessageType.Emoji" class="flex items-center">
                     <div> {{ msgStore.referenceMsg.fromInfo.name }} :</div>
@@ -215,6 +215,7 @@ import {MessageType} from "@/constant/messageType.js";
 import {MessageSource} from "@/constant/messageSource.js";
 import LinyuMsgInput from "@/components/LinyuMsgInput.vue";
 import {UserType} from "@/constant/userType.js";
+import TextMsg from "@/components/Msg/MsgContent/TextMsg.vue";
 
 const themeStore = useThemeStore()
 const msgStore = useChatMsgStore()

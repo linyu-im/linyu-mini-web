@@ -1,5 +1,5 @@
 <template>
-  <p v-if="isArrayContents" class="text-msg">
+  <span v-if="isArrayContents" class="text-msg">
     <template v-for="item in contents" :key="item.id">
       <span v-if="item.type===TextContentType.At" class="text-msg-at" :class="{right:right}">
         {{ `@${getUserInfo(item.content).name}` }}
@@ -8,7 +8,7 @@
         {{ item.content }}
       </span>
     </template>
-  </p>
+  </span>
   <div v-else>
     {{ props.msg.message }}
   </div>
