@@ -334,6 +334,7 @@ const insertInputText = (content) => {
       sel.addRange(newRange)
     }
   }
+  inputValue.value = inputRef.value.innerText
 }
 
 
