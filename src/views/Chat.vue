@@ -1,5 +1,11 @@
 <template>
   <div class="chat-container">
+    <!--语音接听-->
+    <video-chat v-model:visible="videoVisible"
+                :target-info="videoTargetInfo"
+                :is-send="videoIsSend"
+                :is-only-audio="videoIsOnlyAudio"
+    />
     <!--表情弹窗-->
     <linyu-popup v-model:visible="isEmojiVisible" :position="emojiPosition">
       <linyu-emoji-box @on-emoji="handlerOnEmoji"/>
@@ -104,6 +110,8 @@
                     <div> {{ msgStore.referenceMsg.fromInfo.name }} :</div>
                     <emoji-msg height="40px" width="40px" :src="msgStore.referenceMsg.message"/>
                   </div>
+                  <call-msg v-if="msgStore.referenceMsg.type===MessageType.Call"
+                            :msg="msgStore.referenceMsg"/>
                   <div class="ml-[10px]">
                     <linyu-icon-button
                         @click="msgStore.referenceMsg=null"
@@ -124,6 +132,16 @@
                         :is-at-popup="targetId==='1'"
                     />
                   </div>
+                  <template v-if="targetId!=='1'">
+                    <div class="emoji-button"
+                         @click="()=>handlerVideoCall(currentSelectTarget?.targetInfo,true,true)">
+                      <div class="iconfont icon-yuyintonghua text-[24px]"/>
+                    </div>
+                    <div class="emoji-button"
+                         @click="()=>handlerVideoCall(currentSelectTarget?.targetInfo,true,false)">
+                      <div class="iconfont icon-shipingtonghua text-[24px]"/>
+                    </div>
+                  </template>
                 </div>
               </div>
               <div class="publish-button" @click="handlerSubmitMsg">
@@ -216,6 +234,9 @@ import {MessageSource} from "@/constant/messageSource.js";
 import LinyuMsgInput from "@/components/LinyuMsgInput.vue";
 import {UserType} from "@/constant/userType.js";
 import TextMsg from "@/components/Msg/MsgContent/TextMsg.vue";
+import VideoChat from "@/components/VideoChat.vue";
+import VideoApi from "@/api/video.js";
+import CallMsg from "@/components/Msg/MsgContent/CallMsg.vue";
 
 const themeStore = useThemeStore()
 const msgStore = useChatMsgStore()
@@ -242,7 +263,10 @@ const currentNewMsgCount = ref(0)
 const isEmojiVisible = ref(false)
 const emojiPosition = ref()
 const msgInputRef = ref()
-
+const videoVisible = ref(false)
+const videoTargetInfo = ref()
+const videoIsSend = ref()
+const videoIsOnlyAudio = ref()
 
 msgStore.$subscribe((mutation) => {
   const {scrollTop, clientHeight, scrollHeight} = chatShowAreaRef.value;
@@ -264,6 +288,15 @@ const handleScroll = () => {
     }
   }
 };
+
+const handlerVideoCall = (info, isSend, isOnlyAudio) => {
+  if (!info) return
+  VideoApi.invite({userId: info.id, isOnlyAudio: isOnlyAudio})
+  videoVisible.value = true
+  videoTargetInfo.value = info
+  videoIsSend.value = isSend
+  videoIsOnlyAudio.value = isOnlyAudio
+}
 
 const userList = computed(() => {
   const values = Array.from(userListMap.value.values());
@@ -311,8 +344,7 @@ const handlerReceiveMsg = (data) => {
     handlerReceiveRecallMsg(data)
     return;
   }
-  if (data.fromId === currentUserId) return
-
+  if (data.fromId === currentUserId && data.type !== MessageType.Call) return
   const {scrollTop, clientHeight, scrollHeight} = chatShowAreaRef.value;
   const isBottom = scrollTop + clientHeight >= scrollHeight - 1
 
@@ -377,9 +409,20 @@ const handlerReceiveNotify = (data) => {
   }
 }
 
+const handlerVideoMsg = async (msg) => {
+  if (msg.fromId === currentUserId) return
+  if (msg.type === "invite") {
+    const targetInfo = userListMap.value.get(msg.fromId)
+    videoVisible.value = true
+    videoTargetInfo.value = targetInfo
+    videoIsSend.value = false
+    videoIsOnlyAudio.value = msg.isOnlyAudio
+  }
+}
 
 onMounted(async () => {
   EventBus.on('on-receive-msg', handlerReceiveMsg)
+  EventBus.on('on-receive-video', handlerVideoMsg)
   if (chatShowAreaRef.value) {
     chatShowAreaRef.value.addEventListener('scroll', handleScroll);
   }
@@ -395,6 +438,8 @@ onMounted(async () => {
 
 onUnmounted(() => {
   EventBus.off('on-receive-msg', handlerReceiveMsg)
+  EventBus.off('on-receive-notify', handlerReceiveNotify)
+  EventBus.on('on-video-msg', handlerVideoMsg)
 })
 
 
@@ -626,6 +671,7 @@ const onCreatePrivateChat = (id) => {
   display: flex;
   align-items: center;
   justify-content: center;
+  overflow: hidden;
 
   .chat-bg {
     width: 100%;

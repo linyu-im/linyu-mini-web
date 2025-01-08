@@ -15,18 +15,16 @@
 </template>
 
 <script setup>
-import {reactive, computed, onMounted, onBeforeUnmount, ref} from 'vue';
+import {reactive, computed, onMounted, onBeforeUnmount, ref, watch, nextTick} from 'vue';
 
 const contentRef = ref(null)
 
 const props = defineProps({
   width: {
     type: Number,
-    default: 300
   },
   height: {
     type: Number,
-    default: 200,
   },
   drag: {
     type: Boolean,
@@ -37,7 +35,8 @@ const props = defineProps({
     default: true,
   },
   title: String,
-  rounded: Number
+  rounded: Number,
+  refresh: Object,
 })
 
 const state = reactive({
@@ -50,6 +49,25 @@ const state = reactive({
   dragStart: {x: 0, y: 0},
   resizeStart: {x: 0, y: 0, width: 0, height: 0},
 });
+
+watch(() => props.refresh, () => {
+  nextTick(() => {
+    if (props.refresh?.width) {
+      state.width = props.refresh.width;
+    }
+    if (props.refresh?.height) {
+      state.height = props.refresh.height;
+    }
+  });
+})
+
+watch(contentRef, () => {
+  if (contentRef.value) {
+    const rect = contentRef.value.getBoundingClientRect();
+    if (!state.width) state.width = rect.width
+    if (!state.height) state.height = rect.height
+  }
+})
 
 const computedStyle = computed(() => ({
   top: `${state.top}px`,
@@ -151,12 +169,10 @@ onBeforeUnmount(() => {
 
 <style scoped>
 .draggable-resizable-window {
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-  border: 1px solid #ccc;
-  overflow: hidden;
   z-index: 1000;
   user-select: none;
   max-width: 90%;
+  background-color: #4C9BFF;
 }
 
 .window-header {
@@ -167,8 +183,6 @@ onBeforeUnmount(() => {
 }
 
 .window-content {
-  height: 100%;
-  width: 100%;
 }
 
 .resize-handle {

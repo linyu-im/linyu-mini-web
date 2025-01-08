@@ -12,6 +12,9 @@
       <div v-if="props.msg.type===MessageType.Emoji">
         <emoji-msg :src="props.msg.message"/>
       </div>
+      <div v-if="props.msg.type===MessageType.Call">
+        <call-msg :msg="props.msg" :right="right"/>
+      </div>
     </div>
     <!--消息相关操作-->
     <transition name="fade">
@@ -46,6 +49,7 @@ import EmojiMsg from "@/components/Msg/MsgContent/EmojiMsg.vue";
 import {MessageType} from "@/constant/messageType.js";
 import TextMsg from "@/components/Msg/MsgContent/TextMsg.vue";
 import {TextContentType} from "@/constant/textContentType.js";
+import CallMsg from "@/components/Msg/MsgContent/CallMsg.vue";
 
 const showToast = useToast()
 const msgStore = useChatMsgStore();
@@ -116,7 +120,7 @@ const handlerCopy = () => {
   .msg-content {
     display: inline-block;
     word-break: break-word;
-    max-width: 50%;
+    max-width: 70%;
     background-color: white;
     padding: 8px;
     border-radius: 0 10px 10px 10px;

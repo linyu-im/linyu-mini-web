@@ -36,7 +36,7 @@ function response(event) {
                     break;
                 }
                 case "video": {
-                    break;
+                    EventBus.emit('on-receive-video', wsContent.content)
                 }
             }
         }
