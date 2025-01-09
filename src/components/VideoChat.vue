@@ -73,7 +73,7 @@
       </div>
     </linyu-draggable-window>
     <!--  视频通话-->
-    <linyu-draggable-window v-if="isReady&&!props.isOnlyAudio" :resize="false">
+    <linyu-draggable-window v-if="isReady&&!props.isOnlyAudio" :rounded="20" :resize="false">
       <div class="video-call">
         <video ref="local" autoPlay :class="`${isVideoSwitch ? 'max-window' : 'min-window'}`"
                @click="isVideoSwitch=!isVideoSwitch"/>
@@ -294,6 +294,11 @@ const handleICEConnectionStateChangeEvent = (event) => {
   if (pc.value?.iceConnectionState === 'disconnected') {
     showToast('对方通话异常~', true)
     onHangup()
+  } else {
+    handlerDestroyTime()
+    timerId.value = setInterval(() => {
+      time.value = time.value + 1
+    }, 1000);
   }
 }
 
