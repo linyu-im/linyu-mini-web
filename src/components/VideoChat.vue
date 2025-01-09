@@ -115,7 +115,7 @@
 import LinyuDraggableWindow from "@/components/LinyuDraggableWindow.vue";
 import LinyuAvatar from "@/components/LinyuAvatar.vue";
 import LoadingDots from "@/components/LoadingDots.vue";
-import {computed, nextTick, onMounted, ref, watch} from "vue";
+import {computed, nextTick, onMounted, onUnmounted, ref, watch} from "vue";
 import {useToast} from '@/components/ToastProvider.vue';
 import EventBus from "@/utils/eventBus.js";
 import VideoApi from "@/api/video.js";
@@ -239,6 +239,10 @@ onMounted(async () => {
   EventBus.on('on-receive-video', handlerVideoMsg)
 })
 
+onUnmounted(async () => {
+  EventBus.off('on-receive-video', handlerVideoMsg)
+})
+
 const handleVideoOfferMsg = async (data) => {
   const desc = new RTCSessionDescription(data.desc);
   await pc.value.setRemoteDescription(desc);
@@ -287,10 +291,10 @@ const handlerDestroyTime = () => {
 }
 
 const handleICEConnectionStateChangeEvent = (event) => {
-  handlerDestroyTime()
-  timerId.value = setInterval(() => {
-    time.value = time.value + 1
-  }, 1000);
+  if (pc.value?.iceConnectionState === 'disconnected') {
+    showToast('对方通话异常~', true)
+    onHangup()
+  }
 }
 
 const onOffer = async () => {
@@ -318,7 +322,7 @@ const onHangup = () => {
 }
 
 </script>
-<style>
+<style lang="less" scoped>
 .video-answer {
   width: 320px;
   background-color: rgba(48, 48, 75, 0.9);

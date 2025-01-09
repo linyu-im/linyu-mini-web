@@ -37,6 +37,11 @@ function response(event) {
                 }
                 case "video": {
                     EventBus.emit('on-receive-video', wsContent.content)
+                    break;
+                }
+                case "file": {
+                    EventBus.emit('on-receive-file', wsContent.content)
+                    break;
                 }
             }
         }

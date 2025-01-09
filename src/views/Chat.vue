@@ -1,10 +1,16 @@
 <template>
   <div class="chat-container">
+    <!--文件传输-->
+    <file-transfer v-model:visible="fileInfo.fileVisible"
+                   :target-info="fileInfo.fileTargetInfo"
+                   :is-send="fileInfo.fileIsSend"
+                   :file="fileInfo.file"
+    />
     <!--语音接听-->
-    <video-chat v-model:visible="videoVisible"
-                :target-info="videoTargetInfo"
-                :is-send="videoIsSend"
-                :is-only-audio="videoIsOnlyAudio"
+    <video-chat v-model:visible="videoInfo.videoVisible"
+                :target-info="videoInfo.videoTargetInfo"
+                :is-send="videoInfo.videoIsSend"
+                :is-only-audio="videoInfo.videoIsOnlyAudio"
     />
     <!--表情弹窗-->
     <linyu-popup v-model:visible="isEmojiVisible" :position="emojiPosition">
@@ -15,7 +21,10 @@
         <!-- 左侧菜单 -->
         <div class="box-left" :class="{'show-left': showLeft}">
           <div class="chat-list-title">
-            消息列表
+            <div class="relative flex">
+              消息列表
+              <linyu-label class="absolute">v{{ version }}</linyu-label>
+            </div>
             <div class="close-btn" @click="showLeft = false">×</div>
           </div>
           <div
@@ -120,7 +129,7 @@
                   </div>
                 </div>
                 <div class="flex items-center">
-                  <div class="emoji-button" @click="handlerSetEmojiBoxPosition">
+                  <div class="emoji-button mr-[10px]" @click="handlerSetEmojiBoxPosition">
                     <div class="iconfont icon-biaoqing text-[28px]"/>
                   </div>
                   <div class="chat-msg-input">
@@ -132,16 +141,21 @@
                         :is-at-popup="targetId==='1'"
                     />
                   </div>
-                  <template v-if="targetId!=='1'">
+                  <div v-if="targetId!=='1'" class="flex gap-[2px]">
+                    <div class="emoji-button "
+                         @click="fileInput.click()">
+                      <input type="file" ref="fileInput" @change="handlerSendFile" style="display: none"/>
+                      <div class="iconfont icon-wenjian text-[22px]"/>
+                    </div>
                     <div class="emoji-button"
                          @click="()=>handlerVideoCall(currentSelectTarget?.targetInfo,true,true)">
-                      <div class="iconfont icon-yuyintonghua text-[24px]"/>
+                      <div class="iconfont icon-yuyintonghua text-[22px]"/>
                     </div>
                     <div class="emoji-button"
                          @click="()=>handlerVideoCall(currentSelectTarget?.targetInfo,true,false)">
-                      <div class="iconfont icon-shipingtonghua text-[24px]"/>
+                      <div class="iconfont icon-shipingtonghua text-[22px]"/>
                     </div>
-                  </template>
+                  </div>
                 </div>
               </div>
               <div class="publish-button" @click="handlerSubmitMsg">
@@ -206,7 +220,7 @@
 </template>
 
 <script setup>
-import {computed, nextTick, onMounted, onUnmounted, ref, watch} from 'vue'
+import {computed, nextTick, onMounted, onUnmounted, reactive, ref, watch} from 'vue'
 import {useThemeStore} from "@/stores/useThemeStore.js";
 import {toggleDark} from "@/utils/theme.js";
 import LinyuInput from "@/components/LinyuInput.vue";
@@ -217,6 +231,7 @@ import LinyuDotHint from "@/components/LinyuDotHint.vue";
 import MessageApi from "@/api/message.js";
 import EventBus from "@/utils/eventBus.js";
 import UserApi from "@/api/user.js";
+import FileApi from "@/api/file.js";
 import LinyuTooltip from "@/components/LinyuTooltip.vue";
 import ws from "@/utils/ws.js";
 import LinyuTextButton from "@/components/LinyuTextButton.vue";
@@ -237,7 +252,10 @@ import TextMsg from "@/components/Msg/MsgContent/TextMsg.vue";
 import VideoChat from "@/components/VideoChat.vue";
 import VideoApi from "@/api/video.js";
 import CallMsg from "@/components/Msg/MsgContent/CallMsg.vue";
+import FileTransfer from "@/components/FileTransfer.vue";
+import LinyuLabel from "@/components/LinyuLabel.vue";
 
+let version = import.meta.env.VITE_LINYU_VERSION
 const themeStore = useThemeStore()
 const msgStore = useChatMsgStore()
 const router = useRouter();
@@ -263,10 +281,20 @@ const currentNewMsgCount = ref(0)
 const isEmojiVisible = ref(false)
 const emojiPosition = ref()
 const msgInputRef = ref()
-const videoVisible = ref(false)
-const videoTargetInfo = ref()
-const videoIsSend = ref()
-const videoIsOnlyAudio = ref()
+const videoInfo = reactive({
+  videoVisible: false,
+  videoTargetInfo: null,
+  videoIsSend: false,
+  videoIsOnlyAudio: false,
+})
+const fileInfo = reactive({
+  fileVisible: false,
+  fileTargetInfo: null,
+  fileIsSend: false,
+  file: null,
+})
+const fileInput = ref()
+
 
 msgStore.$subscribe((mutation) => {
   const {scrollTop, clientHeight, scrollHeight} = chatShowAreaRef.value;
@@ -289,13 +317,30 @@ const handleScroll = () => {
   }
 };
 
+const handlerSendFile = (event) => {
+  const files = event.target.files;
+  if (files && files.length > 0) {
+    fileInfo.fileVisible = true
+    fileInfo.fileTargetInfo = currentSelectTarget.value?.targetInfo
+    fileInfo.fileIsSend = true
+    fileInfo.file = files[0]
+    FileApi.invite({
+      userId: fileInfo.fileTargetInfo.id,
+      fileInfo: {name: fileInfo.file.name, size: fileInfo.file.size}
+    })
+    event.target.value = '';
+  } else {
+    showToast('文件不正确~', true)
+  }
+}
+
 const handlerVideoCall = (info, isSend, isOnlyAudio) => {
   if (!info) return
   VideoApi.invite({userId: info.id, isOnlyAudio: isOnlyAudio})
-  videoVisible.value = true
-  videoTargetInfo.value = info
-  videoIsSend.value = isSend
-  videoIsOnlyAudio.value = isOnlyAudio
+  videoInfo.videoVisible = true
+  videoInfo.videoTargetInfo = info
+  videoInfo.videoIsSend = isSend
+  videoInfo.videoIsOnlyAudio = isOnlyAudio
 }
 
 const userList = computed(() => {
@@ -347,8 +392,8 @@ const handlerReceiveMsg = (data) => {
   if (data.fromId === currentUserId && data.type !== MessageType.Call) return
   const {scrollTop, clientHeight, scrollHeight} = chatShowAreaRef.value;
   const isBottom = scrollTop + clientHeight >= scrollHeight - 1
-
   if ((data.source === MessageSource.User && targetId.value === data.fromId) ||
+      (data.source === MessageSource.User && targetId.value === data.toId) ||
       (data.source === MessageSource.Group && targetId.value === "1")) {
     msgRecord.value.push(data)
     recordIndex++
@@ -413,16 +458,28 @@ const handlerVideoMsg = async (msg) => {
   if (msg.fromId === currentUserId) return
   if (msg.type === "invite") {
     const targetInfo = userListMap.value.get(msg.fromId)
-    videoVisible.value = true
-    videoTargetInfo.value = targetInfo
-    videoIsSend.value = false
-    videoIsOnlyAudio.value = msg.isOnlyAudio
+    videoInfo.videoVisible = true
+    videoInfo.videoTargetInfo = targetInfo
+    videoInfo.videoIsSend = false
+    videoInfo.videoIsOnlyAudio = msg.isOnlyAudio
+  }
+}
+
+const handlerFileMsg = async (msg) => {
+  if (msg.fromId === currentUserId) return
+  if (msg.type === "invite") {
+    const targetInfo = userListMap.value.get(msg.fromId)
+    fileInfo.fileVisible = true
+    fileInfo.fileTargetInfo = targetInfo
+    fileInfo.fileIsSend = false
+    fileInfo.file = msg.fileInfo
   }
 }
 
 onMounted(async () => {
   EventBus.on('on-receive-msg', handlerReceiveMsg)
   EventBus.on('on-receive-video', handlerVideoMsg)
+  EventBus.on('on-receive-file', handlerFileMsg)
   if (chatShowAreaRef.value) {
     chatShowAreaRef.value.addEventListener('scroll', handleScroll);
   }
@@ -439,7 +496,8 @@ onMounted(async () => {
 onUnmounted(() => {
   EventBus.off('on-receive-msg', handlerReceiveMsg)
   EventBus.off('on-receive-notify', handlerReceiveNotify)
-  EventBus.on('on-video-msg', handlerVideoMsg)
+  EventBus.off('on-receive-file', handlerFileMsg)
+  EventBus.off('on-receive-video', handlerVideoMsg)
 })
 
 
@@ -750,6 +808,7 @@ const onCreatePrivateChat = (id) => {
         align-items: center;
         justify-content: center;
         font-size: 18px;
+        line-height: 18px;
         font-weight: 600;
         user-select: none;
         @media screen and (max-width: 900px) {
@@ -953,7 +1012,6 @@ const onCreatePrivateChat = (id) => {
               justify-content: center;
               align-items: center;
               color: rgba(var(--text-color), 0.5);
-              margin-right: 10px;
               flex-shrink: 1;
             }
 
