@@ -44,7 +44,7 @@ watch(isOpen, (newVal) => {
 const onUpdateUser = () => {
   UserApi.update({name: name.value, avatar: avatar.value}).then(res => {
     if (res.code === 0) {
-      userInfoStore.setUserAvatar(avatar)
+      userInfoStore.setUserAvatar(avatar.value)
       showToast('修改成功~')
       isOpen.value = false
     }
