@@ -13,4 +13,7 @@ export default {
     read(param) {
         return Http.post("/api/v1/chat-list/read", param);
     },
+    delete(param) {
+        return Http.post("/api/v1/chat-list/delete", param);
+    },
 };

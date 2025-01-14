@@ -66,6 +66,8 @@
                   <linyu-chat-list-content :is-group="false" :msg="item?.lastMessage"/>
                 </div>
               </div>
+              <linyu-text-button v-if="targetId === item.targetId" text="移除" class="ml-[10px]"
+                                 @click="()=>onDeleteChatList(item.id)"/>
             </div>
           </div>
           <div class="mb-[10px]">
