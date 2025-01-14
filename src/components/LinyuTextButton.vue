@@ -18,14 +18,14 @@ const emit = defineEmits(["click"])
 
 <style lang="less" scoped>
 .text-button {
-  font-size: 14px;
+  font-size: 12px;
   border-radius: 5px;
   min-width: 40px;
   display: flex;
   justify-content: center;
   align-items: center;
   cursor: pointer;
-  color: rgb(var(--text-color));
+  color: rgb(var(--primary-color));
   padding: 2px 6px;
   background-color: rgba(var(--background-color), 0.3);
   user-select: none;

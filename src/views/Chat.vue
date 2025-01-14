@@ -102,6 +102,9 @@
                    :class="{right:item.fromId===userInfoStore.userId}">
                 <linyu-msg :msg="item" :user="msgStore.userListMap.get(item.fromId)"/>
               </div>
+              <div v-if="isSendLoading" class="flex w-full justify-center items-center">
+                <linyu-loading label="发送中"/>
+              </div>
               <div v-if="currentNewMsgCount>0"
                    class="new-msg-count"
                    @click="scrollToBottom"
@@ -259,6 +262,7 @@ import FileTransfer from "@/components/FileTransfer.vue";
 import LinyuLabel from "@/components/LinyuLabel.vue";
 import ModifyUserInfo from "@/components/ModifyUserInfo.vue";
 import {useUserInfoStore} from "@/stores/useUserInfoStore.js";
+import LinyuLoading from "@/components/LinyuLoading.vue";
 
 let version = import.meta.env.VITE_LINYU_VERSION
 const themeStore = useThemeStore()
@@ -277,7 +281,6 @@ const msgContent = ref('')
 const chatShowAreaRef = ref()
 const isLoading = ref(false)
 const isComplete = ref(false)
-// const userListMap = ref(new Map())
 const onlineCount = ref(0)
 const privateChatList = ref([])
 const userSearchValue = ref('')
@@ -299,7 +302,7 @@ const fileInfo = reactive({
 })
 const fileInput = ref()
 const modifyUserInfoIsOpen = ref(false)
-
+const isSendLoading = ref(false)
 
 msgStore.$subscribe((mutation) => {
   const {scrollTop, clientHeight, scrollHeight} = chatShowAreaRef.value;
@@ -626,6 +629,10 @@ const handlerSubmitMsg = () => {
 
 //发送消息
 const onSendMsg = (msg) => {
+  const time = setTimeout(() => {
+    isSendLoading.value = true
+    scrollToBottom()
+  }, 300)
   MessageApi.send({
     targetId: targetId.value,
     source: targetId.value === '1' ? MessageSource.Group : MessageSource.User,
@@ -636,9 +643,21 @@ const onSendMsg = (msg) => {
     if (res.code === 0) {
       msgRecord.value.push(res.data)
       recordIndex++
-      msgContent.value = ''
-      msgStore.referenceMsg = null
       scrollToBottom()
+    }
+  }).finally(() => {
+    isSendLoading.value = false
+    clearInterval(time)
+  })
+  msgContent.value = ''
+  msgStore.referenceMsg = null
+}
+
+//删除私聊列表内容
+const onDeleteChatList = (id) => {
+  ChatListApi.delete({chatListId: id}).then(res => {
+    if (res.code === 0) {
+      onGetPrivateChatList()
     }
   })
 }
