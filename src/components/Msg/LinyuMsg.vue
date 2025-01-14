@@ -7,13 +7,13 @@
       <recall-msg :msg="msg"/>
     </template>
     <div v-else class="msg-box-wrapper" :class="{right:right}">
-      <linyu-avatar :info="props.msg.fromInfo" size="40px"
+      <linyu-avatar :info="msgStore.userListMap.get(props.msg.fromId)" size="40px"
                     class="mr-[5px] ml-[5px]"/>
       <div class="msg-box-info">
         <!--用户信息-->
         <div class="mgs-box-user-info" :class="{right:right}">
           <div class="msg-username">
-            {{ props.msg.fromInfo?.name }}
+            {{ msgStore.userListMap.get(props.msg.fromId).name }}
           </div>
           <div class="mgs-ip ml-[2px] mr-[2px]">[{{ props.msg.fromInfo.ipOwnership ?? "未知" }}]</div>
           <!--用户徽章-->
@@ -47,8 +47,11 @@ import RecallMsg from "@/components/Msg/MsgContent/RecallMsg.vue";
 import LinyuReferenceContent from "@/components/Msg/LinyuReferenceContent.vue";
 import TimeMsg from "@/components/Msg/MsgContent/TimeMsg.vue";
 import LinyuTooltip from "@/components/LinyuTooltip.vue";
+import {useUserInfoStore} from "@/stores/useUserInfoStore.js";
+import {useChatMsgStore} from "@/stores/useChatMsgStore.js";
 
-const currentUserId = localStorage.getItem('userId')
+const userInfoStore = useUserInfoStore();
+const msgStore = useChatMsgStore();
 
 const props = defineProps({
   msg: Object,
@@ -61,7 +64,7 @@ const badges = {
   "diamond": {icon: "diamond.png", des: "~历久弥新~"},
 }
 
-const right = props.msg.fromId === currentUserId
+const right = props.msg.fromId === userInfoStore.userId
 
 </script>
 <style lang="less" scoped>

@@ -1,6 +1,7 @@
 <template>
   <div class="avatar" :style="{ backgroundColor,width:size,height:size }">
-    <img v-if="info?.avatar" :src="info?.avatar" alt=""/>
+    <img v-if="info?.avatar&&!hasError" :src="info?.avatar" alt=""
+         @error="hasError=true"/>
     <template v-else>
       {{ displayCharacter }}
     </template>
@@ -8,7 +9,9 @@
 </template>
 
 <script setup>
-import {computed} from "vue";
+import {computed, ref, watch} from "vue"
+
+const hasError = ref(false)
 
 const props = defineProps({
   info: Object,
@@ -21,6 +24,10 @@ const props = defineProps({
     default: -1
   }
 });
+
+watch(() => props.info.avatar, () => {
+  hasError.value = false
+})
 
 // 定义背景颜色列表
 const colors = ["rgba(248,176,0,0.9)", "rgba(255,83,168,0.9)",
@@ -56,5 +63,6 @@ const backgroundColor = computed(() => {
   border: 2px solid rgba(255, 255, 255, 0.5);
   flex-shrink: 0;
   user-select: none;
+  overflow: hidden;
 }
 </style>

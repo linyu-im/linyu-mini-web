@@ -71,8 +71,10 @@ import {useToast} from '@/components/ToastProvider.vue';
 import {useRoute, useRouter} from "vue-router"
 import LoginApi from "@/api/login.js";
 import {JSEncrypt} from "jsencrypt";
+import {useUserInfoStore} from "@/stores/useUserInfoStore.js";
 
 const themeStore = useThemeStore()
+const userInfoStore = useUserInfoStore();
 const router = useRouter()
 const route = useRoute();
 
@@ -129,8 +131,12 @@ const onLogin = () => {
       .then((res) => {
         if (res.code === 0) {
           localStorage.setItem('x-token', res.data.token)
-          localStorage.setItem('userId', res.data.userId)
-          localStorage.setItem('userName', res.data.userName)
+          userInfoStore.setUserInfo({
+            userId: res.data.userId,
+            userName: res.data.userName,
+            email: res.data.email,
+            avatar: res.data.avatar,
+          })
           router.push('/')
         } else {
           showToast(res.msg, true)

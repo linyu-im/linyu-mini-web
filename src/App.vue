@@ -20,12 +20,15 @@ import LinyuDialog from "@/components/LinyuDialog.vue";
 import {useGroupStore} from "@/stores/useGroupStore.js";
 import {useGlobalStore} from "@/stores/useGlobalStore.js";
 import ws from "@/utils/ws.js";
+import {useUserInfoStore} from "@/stores/useUserInfoStore.js";
 
 const themeStore = useThemeStore();
 const globalStore = useGlobalStore();
+const userInfoStore = useUserInfoStore();
 const router = useRouter();
 const handlerLogout = () => {
   localStorage.removeItem("x-token")
+  userInfoStore.clearUserInfo()
   ws.disConnect()
   router.push('/login')
   globalStore.closeGlobalDialog()

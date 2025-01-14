@@ -1,9 +1,7 @@
 <template>
   <Transition name="fade">
     <div v-if="isOpen" class="modal-overlay">
-      <div @click.stop>
-        <slot/>
-      </div>
+      <slot/>
     </div>
   </Transition>
 </template>
@@ -19,10 +17,13 @@ const isOpen = defineModel('isOpen')
   position: absolute;
   top: 0;
   left: 0;
-  width: 100vw;
-  height: 100vh;
+  width: 100%;
+  height: 100%;
   z-index: 999;
   background-color: rgba(31, 31, 31, 0.1);
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .fade-enter-active,

@@ -9,5 +9,8 @@ export default {
     },
     onlineWeb() {
         return Http.get("/api/v1/user/online/web");
+    },
+    update(param) {
+        return Http.post("/api/v1/user/update", param);
     }
 };

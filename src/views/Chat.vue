@@ -12,6 +12,8 @@
                 :is-send="videoInfo.videoIsSend"
                 :is-only-audio="videoInfo.videoIsOnlyAudio"
     />
+    <!--用户信息修改-->
+    <modify-user-info v-model:is-open="modifyUserInfoIsOpen"/>
     <!--表情弹窗-->
     <linyu-popup v-model:visible="isEmojiVisible" :position="emojiPosition">
       <linyu-emoji-box @on-emoji="handlerOnEmoji"/>
@@ -85,7 +87,7 @@
               <i class="iconfont icon-liebiao text-[24px]"/>
             </div>
             <template v-if="targetId==='1'">
-              {{ groupChat?.targetInfo.name }}（{{ userListMap.size }}）
+              {{ groupChat?.targetInfo.name }}（{{ msgStore.userListMap.size }}）
             </template>
             <template v-else>
               {{ currentSelectTarget?.targetInfo?.name }}
@@ -97,8 +99,8 @@
           <div class="middle-content">
             <div class="chat-show-area" ref="chatShowAreaRef">
               <div v-for="(item) in msgRecord" class="msg-item" :key="item.id"
-                   :class="{right:item.fromId===currentUserId}">
-                <linyu-msg :msg="item" :user="userListMap.get(item.fromId)"/>
+                   :class="{right:item.fromId===userInfoStore.userId}">
+                <linyu-msg :msg="item" :user="msgStore.userListMap.get(item.fromId)"/>
               </div>
               <div v-if="currentNewMsgCount>0"
                    class="new-msg-count"
@@ -169,8 +171,9 @@
         <div class="box-right" :class="{'show-right': showRight}">
           <div class="right-top">
             <div class="flex items-center">
-              <linyu-avatar :info="{name:currentUserName}" size="40px" class="mr-[5px]"/>
-              <div class="user-name">{{ currentUserName }}</div>
+              <linyu-avatar :info="{name:userInfoStore.userName,avatar:userInfoStore.avatar}" size="40px"
+                            class="mr-[5px] cursor-pointer" @click="modifyUserInfoIsOpen=true"/>
+              <div class="user-name">{{ userInfoStore.userName }}</div>
             </div>
             <div class="flex">
               <linyu-icon-button v-if="themeStore.theme==='light'" @click="(e)=>toggleDark(e,'dark')"
@@ -207,7 +210,7 @@
                   </linyu-tooltip>
                 </div>
                 <div class="online-item-operation ml-[20px]">
-                  <linyu-text-button v-if="item.id!==currentUserId&&item.type!==UserType.Bot" text="私聊"
+                  <linyu-text-button v-if="item.id!==userInfoStore.userId&&item.type!==UserType.Bot" text="私聊"
                                      @click="()=>{onCreatePrivateChat(item.id);closeMask()}"/>
                 </div>
               </div>
@@ -254,15 +257,16 @@ import VideoApi from "@/api/video.js";
 import CallMsg from "@/components/Msg/MsgContent/CallMsg.vue";
 import FileTransfer from "@/components/FileTransfer.vue";
 import LinyuLabel from "@/components/LinyuLabel.vue";
+import ModifyUserInfo from "@/components/ModifyUserInfo.vue";
+import {useUserInfoStore} from "@/stores/useUserInfoStore.js";
 
 let version = import.meta.env.VITE_LINYU_VERSION
 const themeStore = useThemeStore()
 const msgStore = useChatMsgStore()
+const userInfoStore = useUserInfoStore();
 const router = useRouter();
 const showToast = useToast()
 let recordIndex = 0;
-const currentUserId = localStorage.getItem('userId')
-const currentUserName = localStorage.getItem('userName')
 const showLeft = ref(false)
 const showRight = ref(false)
 const groupChat = ref()
@@ -273,7 +277,7 @@ const msgContent = ref('')
 const chatShowAreaRef = ref()
 const isLoading = ref(false)
 const isComplete = ref(false)
-const userListMap = ref(new Map())
+// const userListMap = ref(new Map())
 const onlineCount = ref(0)
 const privateChatList = ref([])
 const userSearchValue = ref('')
@@ -294,6 +298,7 @@ const fileInfo = reactive({
   file: null,
 })
 const fileInput = ref()
+const modifyUserInfoIsOpen = ref(false)
 
 
 msgStore.$subscribe((mutation) => {
@@ -344,7 +349,7 @@ const handlerVideoCall = (info, isSend, isOnlyAudio) => {
 }
 
 const userList = computed(() => {
-  const values = Array.from(userListMap.value.values());
+  const values = Array.from(msgStore.userListMap.values());
   if (userSearchValue.value) {
     return values.filter(item => item.name.includes(userSearchValue.value));
   } else {
@@ -354,7 +359,7 @@ const userList = computed(() => {
 
 const userListAll = computed(() => {
   const values = [];
-  for (const [, value] of userListMap.value) {
+  for (const [, value] of msgStore.userListMap) {
     values.push({name: value.name, id: value.id, type: value.type})
   }
   return values
@@ -389,7 +394,7 @@ const handlerReceiveMsg = (data) => {
     handlerReceiveRecallMsg(data)
     return;
   }
-  if (data.fromId === currentUserId && data.type !== MessageType.Call) return
+  if (data.fromId === userInfoStore.userId && data.type !== MessageType.Call) return
   const {scrollTop, clientHeight, scrollHeight} = chatShowAreaRef.value;
   const isBottom = scrollTop + clientHeight >= scrollHeight - 1
   if ((data.source === MessageSource.User && targetId.value === data.fromId) ||
@@ -430,10 +435,10 @@ const handlerUpdateChatList = (message) => {
 
 //接收到通知
 const handlerReceiveNotify = (data) => {
-  let user = userListMap.value.get(data.content.id);
+  let user = msgStore.userListMap.get(data.content.id);
   if (!user) {
     user = data.content
-    userListMap.value.set(user.id, user)
+    msgStore.userListMap.set(user.id, user)
   }
   switch (data.type) {
     case "web-online":
@@ -455,9 +460,9 @@ const handlerReceiveNotify = (data) => {
 }
 
 const handlerVideoMsg = async (msg) => {
-  if (msg.fromId === currentUserId) return
+  if (msg.fromId === userInfoStore.userId) return
   if (msg.type === "invite") {
-    const targetInfo = userListMap.value.get(msg.fromId)
+    const targetInfo = msgStore.userListMap.get(msg.fromId)
     videoInfo.videoVisible = true
     videoInfo.videoTargetInfo = targetInfo
     videoInfo.videoIsSend = false
@@ -466,9 +471,9 @@ const handlerVideoMsg = async (msg) => {
 }
 
 const handlerFileMsg = async (msg) => {
-  if (msg.fromId === currentUserId) return
+  if (msg.fromId === userInfoStore.userId) return
   if (msg.type === "invite") {
-    const targetInfo = userListMap.value.get(msg.fromId)
+    const targetInfo = msgStore.userListMap.get(msg.fromId)
     fileInfo.fileVisible = true
     fileInfo.fileTargetInfo = targetInfo
     fileInfo.fileIsSend = false
@@ -596,6 +601,7 @@ const closeMask = () => {
 //退出登录
 const handlerLogout = () => {
   localStorage.removeItem("x-token")
+  userInfoStore.clearUserInfo()
   ws.disConnect()
   router.push('/login')
 }
@@ -641,7 +647,7 @@ const onSendMsg = (msg) => {
 const onGetUserListMap = async () => {
   await UserApi.listMap().then(res => {
     if (res.code === 0) {
-      userListMap.value = new Map(Object.entries(res.data));
+      msgStore.setUserListMap(new Map(Object.entries(res.data)));
     }
   })
 }
@@ -652,7 +658,7 @@ const onGetOnlineWeb = async () => {
     if (res.code === 0) {
       const onlineWeb = res.data;
       for (let i = 0; i < onlineWeb?.length; i++) {
-        const user = userListMap.value.get(onlineWeb[i])
+        const user = msgStore.userListMap.get(onlineWeb[i])
         user.status = Array.isArray(user.status) ? [...user.status, 'web'] : ['web'];
       }
     }
@@ -661,7 +667,7 @@ const onGetOnlineWeb = async () => {
 
 //排序
 const handlerUserListSort = () => {
-  const sortedEntries = [...userListMap.value.entries()].sort(([, a], [, b]) => {
+  const sortedEntries = [...msgStore.userListMap.entries()].sort(([, a], [, b]) => {
     if (a?.type === UserType.Bot && b?.type !== UserType.Bot) return -1;
     if (b?.type === UserType.Bot && a?.type !== UserType.Bot) return 1;
     const aStatus = a?.status || [];
@@ -672,9 +678,9 @@ const handlerUserListSort = () => {
     if (!aStatusEmpty && bStatusEmpty) return -1;
     return 0;
   });
-  userListMap.value = new Map(sortedEntries);
+  msgStore.userListMap = new Map(sortedEntries);
   let onlineNum = 0
-  for (let [, value] of userListMap.value) {
+  for (let [, value] of msgStore.userListMap) {
     if (value.type === UserType.Bot) {
       continue
     }
