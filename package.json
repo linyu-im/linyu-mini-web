@@ -6,7 +6,9 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "lint": "eslint . --fix",
+    "format": "prettier --write src/"
   },
   "dependencies": {
     "pinia": "^2.3.0",
@@ -25,6 +27,11 @@
     "postcss": "^8.4.40",
     "tailwindcss": "^3.4.7",
     "vite": "^6.0.1",
-    "vite-plugin-vue-devtools": "^7.6.5"
+    "vite-plugin-vue-devtools": "^7.6.5",
+    "@eslint/js": "^9.14.0",
+    "@vue/eslint-config-prettier": "^10.1.0",
+    "eslint": "^9.14.0",
+    "eslint-plugin-vue": "^9.30.0",
+    "prettier": "^3.3.3"
   }
 }
