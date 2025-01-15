@@ -2,45 +2,45 @@
   <div class="linyu-msg-input-container">
     <teleport to="#app">
       <div
-          v-if="isAtPopup&&showMentionsPopup&&userList.length>0"
-          class="at-mentions-popup"
-          :style="`top:${popupPosition.y-10}px;left:${popupPosition.x}px`"
-          :data-theme="themeStore.theme"
+        v-if="isAtPopup && showMentionsPopup && userList.length > 0"
+        class="at-mentions-popup"
+        :style="`top:${popupPosition.y - 10}px;left:${popupPosition.x}px`"
+        :data-theme="themeStore.theme"
       >
         <div
-            v-for="(item, index) in userList"
-            class="user-item"
-            :class="{ selected: index === selectedUserIndex }"
-            @click="()=>onSelectUser(item)"
+          v-for="(item, index) in userList"
+          :key="item.id"
+          class="user-item"
+          :class="{ selected: index === selectedUserIndex }"
+          @click="() => onSelectUser(item)"
         >
           {{ item.name }}
         </div>
       </div>
     </teleport>
     <div
-        autofocus
-        ref="inputRef"
-        tabindex="0"
-        contenteditable
-        class="linyu-msg-input"
-        @keyup="onInputKeyUp"
-        @keydown="onInputKeyDown"
-        @input="onInputText"
-        @blur="onInputBlur"
-        @focus="onInputFocus"
-    >
-    </div>
+      autofocus
+      ref="inputRef"
+      tabindex="0"
+      contenteditable
+      class="linyu-msg-input"
+      @keyup="onInputKeyUp"
+      @keydown="onInputKeyDown"
+      @input="onInputText"
+      @blur="onInputBlur"
+      @focus="onInputFocus"
+    ></div>
   </div>
 </template>
 
 <script setup>
-import {computed, ref, watch} from "vue";
-import {useThemeStore} from "@/stores/useThemeStore.js";
+import { computed, ref, watch } from 'vue'
+import { useThemeStore } from '@/stores/useThemeStore.js'
 
-const themeStore = useThemeStore();
+const themeStore = useThemeStore()
 
 const inputRef = ref()
-const popupPosition = ref({x: 0, y: 0})
+const popupPosition = ref({ x: 0, y: 0 })
 const showMentionsPopup = ref(false)
 const searchKey = ref('')
 const selectedUserIndex = ref(0)
@@ -53,18 +53,18 @@ const selection = ref({
   range: null,
   node: null,
   offset: 0,
-  text: ''
-});
+  text: '',
+})
 
 const emit = defineEmits(['send'])
 
-const props = defineProps({user: Object, isAtPopup: Boolean})
+const props = defineProps({ user: Object, isAtPopup: Boolean })
 
 const userList = computed(() => {
   if (props.user) {
-    return props.user.filter(item => item.name.includes(searchKey.value));
+    return props.user.filter((item) => item.name.includes(searchKey.value))
   } else {
-    return props.user;
+    return props.user
   }
 })
 
@@ -91,194 +91,194 @@ const onInputFocus = () => {
   checkIsShowSelectPopup()
 }
 
-
 const onInputKeyDown = (e) => {
-  const isEnterKey = e.key === 'Enter';
-  const isArrowUp = e.key === 'ArrowUp';
-  const isArrowDown = e.key === 'ArrowDown';
-  const isTabKey = e.key === 'Tab';
-  const isCtrlOrMeta = e.ctrlKey || e.metaKey;
+  const isEnterKey = e.key === 'Enter'
+  const isArrowUp = e.key === 'ArrowUp'
+  const isArrowDown = e.key === 'ArrowDown'
+  const isTabKey = e.key === 'Tab'
+  const isCtrlOrMeta = e.ctrlKey || e.metaKey
 
   if (showMentionsPopup.value && userList.value.length > 0) {
     if (isArrowUp) {
-      e.preventDefault();
+      e.preventDefault()
       if (selectedUserIndex.value > 0) {
-        selectedUserIndex.value--;
-        scrollToSelectedUser();
+        selectedUserIndex.value--
+        scrollToSelectedUser()
       }
     } else if (isArrowDown) {
-      e.preventDefault();
+      e.preventDefault()
       if (selectedUserIndex.value < userList.value.length - 1) {
-        selectedUserIndex.value++;
-        scrollToSelectedUser();
+        selectedUserIndex.value++
+        scrollToSelectedUser()
       }
     } else if (isEnterKey) {
-      e.preventDefault();
-      onSelectUser(userList.value[selectedUserIndex.value]);
+      e.preventDefault()
+      onSelectUser(userList.value[selectedUserIndex.value])
     }
   } else {
     if (isEnterKey) {
       if (e.ctrlKey || e.shiftKey || e.metaKey) {
-        e.preventDefault();
+        e.preventDefault()
       } else {
-        e.preventDefault();
-        emit('send', e);
+        e.preventDefault()
+        emit('send', e)
       }
     }
   }
   if (isCtrlOrMeta) {
     if (['B', '2', 'I', '9', 'U', 'F6'].includes(e.key)) {
-      e.preventDefault();
+      e.preventDefault()
     }
   }
   if (isTabKey) {
-    e.preventDefault();
+    e.preventDefault()
   }
-};
-
+}
 
 watch(showMentionsPopup, () => {
   if (showMentionsPopup.value) {
-    popupPosition.value = getAtMentionsPosition();
+    popupPosition.value = getAtMentionsPosition()
   }
 })
 
 const scrollToSelectedUser = () => {
-  const listElement = document.querySelector('.at-mentions-popup');
-  const selectedElement = listElement?.children[selectedUserIndex.value];
+  const listElement = document.querySelector('.at-mentions-popup')
+  const selectedElement = listElement?.children[selectedUserIndex.value]
   if (selectedElement && listElement) {
-    const listRect = listElement.getBoundingClientRect();
-    const selectedRect = selectedElement.getBoundingClientRect();
+    const listRect = listElement.getBoundingClientRect()
+    const selectedRect = selectedElement.getBoundingClientRect()
     if (selectedRect.top < listRect.top) {
       // 如果选中项在列表可视区域上方
-      listElement.scrollTop -= listRect.top - selectedRect.top;
+      listElement.scrollTop -= listRect.top - selectedRect.top
     } else if (selectedRect.bottom > listRect.bottom) {
       // 如果选中项在列表可视区域下方
-      listElement.scrollTop += selectedRect.bottom - listRect.bottom;
+      listElement.scrollTop += selectedRect.bottom - listRect.bottom
     }
   }
-};
+}
 
 const onInputKeyUp = (e) => {
-  updateSelection();
+  updateSelection()
   if (e.key === '@') {
-    selectedUserIndex.value = 0;
-    showMentionsPopup.value = true;
-    searchKey.value = '';
+    selectedUserIndex.value = 0
+    showMentionsPopup.value = true
+    searchKey.value = ''
   } else {
-    checkIsShowSelectPopup();
+    checkIsShowSelectPopup()
   }
 }
 
 const onSelectUser = (selectedUser) => {
-  if (!props.isAtPopup) return;
-  const input = inputRef.value;
-  if (!input || !selection.value.node) return;
+  if (!props.isAtPopup) return
+  const input = inputRef.value
+  if (!input || !selection.value.node) return
 
-  const range = document.createRange();
-  let node = selection.value.node;
-  let offset = selection.value.offset;
+  const range = document.createRange()
+  let node = selection.value.node
+  let offset = selection.value.offset
 
   // 向前查找 @ 符号
   while (offset > 0) {
     if (node.textContent[offset - 1] === '@') {
-      break;
+      break
     }
-    offset--;
+    offset--
   }
 
   // 创建新范围并插入提及按钮
-  range.setStart(node, offset - 1);
-  range.setEnd(node, selection.value.offset);
-  range.deleteContents();
+  range.setStart(node, offset - 1)
+  range.setEnd(node, selection.value.offset)
+  range.deleteContents()
 
-  const button = document.createElement("button");
-  button.textContent = ` @${selectedUser.name} `;
+  const button = document.createElement('button')
+  button.textContent = ` @${selectedUser.name} `
   button.user = JSON.stringify(selectedUser)
-  button.contentEditable = 'false';
-  button.className = 'mention-button';
+  button.contentEditable = 'false'
+  button.className = 'mention-button'
   button.setAttribute(
-      'style',
-      `color:rgb(var(--primary-color));
+    'style',
+    `color:rgb(var(--primary-color));
     border:none;
     background:transparent;
     margin:0 2px;
-    font-size:inherit`
-  );
+    font-size:inherit`,
+  )
 
-  range.insertNode(button);
-  range.setStartAfter(button);
-  range.setEndAfter(button);
+  range.insertNode(button)
+  range.setStartAfter(button)
+  range.setEndAfter(button)
   // 更新选区
-  const newSel = document.getSelection();
-  newSel.removeAllRanges();
-  newSel.addRange(range);
-  showMentionsPopup.value = false;
-  input.dispatchEvent(new Event('input', {
-    bubbles: true,
-    cancelable: true,
-  }));
+  const newSel = document.getSelection()
+  newSel.removeAllRanges()
+  newSel.addRange(range)
+  showMentionsPopup.value = false
+  input.dispatchEvent(
+    new Event('input', {
+      bubbles: true,
+      cancelable: true,
+    }),
+  )
 }
 
 const updateSelection = () => {
-  const input = inputRef.value;
-  if (!input) return;
+  const input = inputRef.value
+  if (!input) return
   // 获取当前选区信息
-  const sel = document.getSelection();
+  const sel = document.getSelection()
   if (sel.rangeCount > 0) {
-    const range = sel.getRangeAt(0);
+    const range = sel.getRangeAt(0)
     selection.value = {
       sel: sel,
       range: range,
       node: range.endContainer,
       offset: range.endOffset,
-      text: range.toString()
-    };
+      text: range.toString(),
+    }
   }
 }
 
 const checkIsShowSelectPopup = () => {
   if (!selection.value.node || selection.value.node.nodeName !== '#text') {
-    showMentionsPopup.value = false;
-    return;
+    showMentionsPopup.value = false
+    return
   }
 
-  const searchStr = selection.value.node.textContent.slice(0, selection.value.offset);
-  const keywords = /@([^@]*)$/.exec(searchStr);
+  const searchStr = selection.value.node.textContent.slice(0, selection.value.offset)
+  const keywords = /@([^@]*)$/.exec(searchStr)
 
   if (keywords && keywords.length >= 2) {
-    const [, keyWord] = keywords;
-    showMentionsPopup.value = true;
-    searchKey.value = keyWord;
+    const [, keyWord] = keywords
+    showMentionsPopup.value = true
+    searchKey.value = keyWord
   } else {
-    searchKey.value = '';
-    showMentionsPopup.value = false;
+    searchKey.value = ''
+    showMentionsPopup.value = false
   }
 }
 
 const getAtMentionsPosition = () => {
-  if (!selection.value.node) return {x: 0, y: 0};
+  if (!selection.value.node) return { x: 0, y: 0 }
 
-  const range = document.createRange();
-  range.setStart(selection.value.node, selection.value.offset);
-  range.collapse(true);
+  const range = document.createRange()
+  range.setStart(selection.value.node, selection.value.offset)
+  range.collapse(true)
 
-  const rect = range.getBoundingClientRect();
-  let x = rect.left;
-  let y = rect.top;
+  const rect = range.getBoundingClientRect()
+  let x = rect.left
+  let y = rect.top
 
   if (inputRef.value) {
-    const inputWidth = inputRef.value.offsetWidth;
-    const inputLeft = inputRef.value.getBoundingClientRect().left;
-    const inputRight = inputLeft + inputWidth;
-    const popupWidth = 150;
+    const inputWidth = inputRef.value.offsetWidth
+    const inputLeft = inputRef.value.getBoundingClientRect().left
+    const inputRight = inputLeft + inputWidth
+    const popupWidth = 150
 
     if (x + popupWidth > inputRight) {
-      x = inputRight - popupWidth;
+      x = inputRight - popupWidth
     }
   }
 
-  return {x, y};
+  return { x, y }
 }
 
 const onDataChange = () => {
@@ -291,7 +291,7 @@ const onDataChange = () => {
         if (element.nodeName === '#text') {
           if (element.data && element.data.length > 0) {
             newNodeList.push({
-              type: "text",
+              type: 'text',
               content: element.data,
             })
           }
@@ -305,7 +305,7 @@ const onDataChange = () => {
         }
       })
     }
-    nodeList = newNodeList;
+    nodeList = newNodeList
   }
 }
 
@@ -337,7 +337,6 @@ const insertInputText = (content) => {
   inputValue.value = inputRef.value.innerText
 }
 
-
 defineExpose({
   focus() {
     inputRef.value?.focus()
@@ -349,10 +348,9 @@ defineExpose({
     insertInputText(text)
   },
   getNodeList() {
-    return nodeList;
-  }
+    return nodeList
+  },
 })
-
 </script>
 
 <style scoped lang="less">
@@ -375,7 +373,6 @@ defineExpose({
     border: rgba(var(--background-color), 0.5) 2px solid;
     color: rgb(var(--text-color));
   }
-
 }
 
 .mention-button {
@@ -419,5 +416,4 @@ defineExpose({
     }
   }
 }
-
 </style>

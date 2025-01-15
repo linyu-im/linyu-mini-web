@@ -1,6 +1,6 @@
 <template>
-  <div class="custom-button" :class="[props.class,props.type]" :style="props.style">
-    <slot/>
+  <div class="custom-button" :class="[props.class, props.type]" :style="props.style">
+    <slot />
   </div>
 </template>
 <script setup>
@@ -19,7 +19,7 @@ const props = defineProps({
   align-items: center;
   background-color: rgba(var(--primary-color));
   border-radius: 5px;
-  color: #FFFFFF;
+  color: #ffffff;
   user-select: none;
   cursor: pointer;
   font-size: 14px;
@@ -29,11 +29,11 @@ const props = defineProps({
   }
 
   &.minor {
-    color: #1F1F1F;
-    background-color: #EDF2F9;
+    color: #1f1f1f;
+    background-color: #edf2f9;
 
     &:hover {
-      background-color: #E3ECFF;
+      background-color: #e3ecff;
     }
   }
 

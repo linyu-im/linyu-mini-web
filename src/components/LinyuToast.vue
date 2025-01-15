@@ -6,23 +6,22 @@
   </div>
 </template>
 <script setup>
-import {onBeforeUnmount, onMounted} from "vue";
+import { onBeforeUnmount, onMounted } from 'vue'
 
 const props = defineProps({
   message: String,
   error: Boolean,
-  duration: Number
+  duration: Number,
 })
 
-const emit = defineEmits(["close"]);
+const emit = defineEmits(['close'])
 
 onMounted(() => {
   const timer = setTimeout(() => {
-    emit('close');
-  }, props.duration);
-  onBeforeUnmount(() => clearTimeout(timer));
-});
-
+    emit('close')
+  }, props.duration)
+  onBeforeUnmount(() => clearTimeout(timer))
+})
 </script>
 
 <style scoped>
@@ -30,7 +29,7 @@ onMounted(() => {
   position: fixed;
   top: 30px;
   padding: 6px 15px;
-  background-color: #4C9BFF;
+  background-color: #4c9bff;
   color: white;
   border-radius: 5px;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);

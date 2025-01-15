@@ -1,27 +1,29 @@
 <template>
   <div class="chat-container">
     <!--文件传输-->
-    <file-transfer v-model:visible="fileInfo.fileVisible"
-                   :target-info="fileInfo.fileTargetInfo"
-                   :is-send="fileInfo.fileIsSend"
-                   :file="fileInfo.file"
+    <file-transfer
+      v-model:visible="fileInfo.fileVisible"
+      :target-info="fileInfo.fileTargetInfo"
+      :is-send="fileInfo.fileIsSend"
+      :file="fileInfo.file"
     />
     <!--语音接听-->
-    <video-chat v-model:visible="videoInfo.videoVisible"
-                :target-info="videoInfo.videoTargetInfo"
-                :is-send="videoInfo.videoIsSend"
-                :is-only-audio="videoInfo.videoIsOnlyAudio"
+    <video-chat
+      v-model:visible="videoInfo.videoVisible"
+      :target-info="videoInfo.videoTargetInfo"
+      :is-send="videoInfo.videoIsSend"
+      :is-only-audio="videoInfo.videoIsOnlyAudio"
     />
     <!--用户信息修改-->
-    <modify-user-info v-model:is-open="modifyUserInfoIsOpen"/>
+    <modify-user-info v-model:is-open="modifyUserInfoIsOpen" />
     <!--表情弹窗-->
     <linyu-popup v-model:visible="isEmojiVisible" :position="emojiPosition">
-      <linyu-emoji-box @on-emoji="handlerOnEmoji"/>
+      <linyu-emoji-box @on-emoji="handlerOnEmoji" />
     </linyu-popup>
     <div class="chat-bg">
       <div class="chat-box">
         <!-- 左侧菜单 -->
-        <div class="box-left" :class="{'show-left': showLeft}">
+        <div class="box-left" :class="{ 'show-left': showLeft }">
           <div class="chat-list-title">
             <div class="relative flex">
               消息列表
@@ -30,53 +32,77 @@
             <div class="close-btn" @click="showLeft = false">×</div>
           </div>
           <div
-              class="chat-list-item black"
-              @click="()=>{targetId='1';closeMask()}"
+            class="chat-list-item black"
+            @click="
+              () => {
+                targetId = '1'
+                closeMask()
+              }
+            "
           >
-            <linyu-avatar :info="{name:'群'}" size="40px" :color="2" class="mr-[10px]"/>
+            <linyu-avatar :info="{ name: '群' }" size="40px" :color="2" class="mr-[10px]" />
             <div class="chat-item-content">
               <div class="flex items-center mb-[5px]">
                 <div class="chat-content-name">{{ groupChat?.targetInfo?.name }}</div>
-                <linyu-dot-hint v-if="groupChat?.unreadCount>0&&targetId!==groupChat.targetId"
-                                :text="groupChat?.unreadCount"/>
+                <linyu-dot-hint
+                  v-if="groupChat?.unreadCount > 0 && targetId !== groupChat.targetId"
+                  :text="groupChat?.unreadCount"
+                />
               </div>
               <div v-if="groupChat?.lastMessage" class="chat-content-msg">
-                <linyu-chat-list-content :msg="groupChat?.lastMessage"/>
+                <linyu-chat-list-content :msg="groupChat?.lastMessage" />
               </div>
             </div>
           </div>
-          <div v-if="privateChatList?.length>0"
-               class="text-[rgba(var(--text-color),0.7)] font-[600] mb-[5px]"
+          <div
+            v-if="privateChatList?.length > 0"
+            class="text-[rgba(var(--text-color),0.7)] font-[600] mb-[5px]"
           >
             私聊
           </div>
           <div class="chat-list-content">
-            <div v-for="item in privateChatList"
-                 :key="item.id"
-                 :class="['chat-list-item', targetId === item.targetId ? 'blue' : 'white']"
-                 @click="()=>{targetId=item.targetId;currentSelectTarget=item;closeMask()}"
+            <div
+              v-for="item in privateChatList"
+              :key="item.id"
+              :class="['chat-list-item', targetId === item.targetId ? 'blue' : 'white']"
+              @click="
+                () => {
+                  targetId = item.targetId
+                  currentSelectTarget = item
+                  closeMask()
+                }
+              "
             >
-              <linyu-avatar :info="item.targetInfo" size="40px" class="mr-[10px]"/>
+              <linyu-avatar :info="item.targetInfo" size="40px" class="mr-[10px]" />
               <div class="chat-item-content">
                 <div class="flex items-center mb-[5px]">
                   <div class="chat-content-name">{{ item.targetInfo.name }}</div>
-                  <linyu-dot-hint v-if="item?.unreadCount>0&&targetId!==item.targetId" :text="item.unreadCount"/>
+                  <linyu-dot-hint
+                    v-if="item?.unreadCount > 0 && targetId !== item.targetId"
+                    :text="item.unreadCount"
+                  />
                 </div>
                 <div class="chat-content-msg">
-                  <linyu-chat-list-content :is-group="false" :msg="item?.lastMessage"/>
+                  <linyu-chat-list-content :is-group="false" :msg="item?.lastMessage" />
                 </div>
               </div>
-              <linyu-text-button v-if="targetId === item.targetId" text="移除" class="ml-[10px]"
-                                 @click="()=>onDeleteChatList(item.id)"/>
+              <linyu-text-button
+                v-if="targetId === item.targetId"
+                text="移除"
+                class="ml-[10px]"
+                @click="() => onDeleteChatList(item.id)"
+              />
             </div>
           </div>
           <div class="mb-[10px]">
             <linyu-card-carousel
-                :play="true"
-                :images="[{key:'github',img:'/github-bg.png'},
-                {key:'bili',img:'/bili-bg.png'},
-                {key:'qq',img:'/qq-bg.png'}]"
-                @click="(card)=>handlerCardClick(card)"
+              :play="true"
+              :images="[
+                { key: 'github', img: '/github-bg.png' },
+                { key: 'bili', img: '/bili-bg.png' },
+                { key: 'qq', img: '/qq-bg.png' },
+              ]"
+              @click="(card) => handlerCardClick(card)"
             />
           </div>
         </div>
@@ -86,137 +112,190 @@
         <div class="box-middle">
           <div class="middle-top">
             <div class="menu-btn" @click="showLeft = true">
-              <i class="iconfont icon-liebiao text-[24px]"/>
+              <i class="iconfont icon-liebiao text-[24px]" />
             </div>
-            <template v-if="targetId==='1'">
+            <template v-if="targetId === '1'">
               {{ groupChat?.targetInfo.name }}（{{ msgStore.userListMap.size }}）
             </template>
             <template v-else>
               {{ currentSelectTarget?.targetInfo?.name }}
             </template>
             <div class="menu-btn" @click="showRight = true">
-              <i class="iconfont icon-shezhi text-[24px]"/>
+              <i class="iconfont icon-shezhi text-[24px]" />
             </div>
           </div>
           <div class="middle-content">
             <div class="chat-show-area" ref="chatShowAreaRef">
-              <div v-for="(item) in msgRecord" class="msg-item" :key="item.id"
-                   :class="{right:item.fromId===userInfoStore.userId}">
-                <linyu-msg :msg="item" :user="msgStore.userListMap.get(item.fromId)"/>
+              <div
+                v-for="item in msgRecord"
+                class="msg-item"
+                :key="item.id"
+                :class="{ right: item.fromId === userInfoStore.userId }"
+              >
+                <linyu-msg :msg="item" :user="msgStore.userListMap.get(item.fromId)" />
               </div>
               <div v-if="isSendLoading" class="flex w-full justify-center items-center">
-                <linyu-loading label="发送中"/>
+                <linyu-loading label="发送中" />
               </div>
-              <div v-if="currentNewMsgCount>0"
-                   class="new-msg-count"
-                   @click="scrollToBottom"
-              >
-                <img alt="" class="h-[18px] mr-[5px]" src="/down.png">
+              <div v-if="currentNewMsgCount > 0" class="new-msg-count" @click="scrollToBottom">
+                <img alt="" class="h-[18px] mr-[5px]" src="/down.png" />
                 {{ currentNewMsgCount }} 条新消息
               </div>
             </div>
             <div class="chat-input-area">
               <div class="chat-input">
                 <div v-if="msgStore.referenceMsg" class="reference-msg">
-                  <div class="reference-msg-content" v-if="msgStore.referenceMsg.type===MessageType.Text">
+                  <div
+                    class="reference-msg-content"
+                    v-if="msgStore.referenceMsg.type === MessageType.Text"
+                  >
                     {{ msgStore.referenceMsg.fromInfo.name }} :
-                    <text-msg :msg="msgStore.referenceMsg"/>
+                    <text-msg :msg="msgStore.referenceMsg" />
                   </div>
-                  <div v-if="msgStore.referenceMsg.type===MessageType.Emoji" class="flex items-center">
-                    <div> {{ msgStore.referenceMsg.fromInfo.name }} :</div>
-                    <emoji-msg height="40px" width="40px" :src="msgStore.referenceMsg.message"/>
+                  <div
+                    v-if="msgStore.referenceMsg.type === MessageType.Emoji"
+                    class="flex items-center"
+                  >
+                    <div>{{ msgStore.referenceMsg.fromInfo.name }} :</div>
+                    <emoji-msg height="40px" width="40px" :src="msgStore.referenceMsg.message" />
                   </div>
-                  <call-msg v-if="msgStore.referenceMsg.type===MessageType.Call"
-                            :msg="msgStore.referenceMsg"/>
+                  <call-msg
+                    v-if="msgStore.referenceMsg.type === MessageType.Call"
+                    :msg="msgStore.referenceMsg"
+                  />
                   <div class="ml-[10px]">
                     <linyu-icon-button
-                        @click="msgStore.referenceMsg=null"
-                        size="20px" font-size="12px"
-                        icon="icon-shanchu"/>
+                      @click="msgStore.referenceMsg = null"
+                      size="20px"
+                      font-size="12px"
+                      icon="icon-shanchu"
+                    />
                   </div>
                 </div>
                 <div class="flex items-center">
                   <div class="emoji-button mr-[10px]" @click="handlerSetEmojiBoxPosition">
-                    <div class="iconfont icon-biaoqing text-[28px]"/>
+                    <div class="iconfont icon-biaoqing text-[28px]" />
                   </div>
                   <div class="chat-msg-input">
                     <linyu-msg-input
-                        v-model:value="msgContent"
-                        ref="msgInputRef"
-                        @send="handlerSubmitMsg"
-                        :user="userListAll"
-                        :is-at-popup="targetId==='1'"
+                      v-model:value="msgContent"
+                      ref="msgInputRef"
+                      @send="handlerSubmitMsg"
+                      :user="userListAll"
+                      :is-at-popup="targetId === '1'"
                     />
                   </div>
-                  <div v-if="targetId!=='1'" class="flex gap-[2px]">
-                    <div class="emoji-button "
-                         @click="fileInput.click()">
-                      <input type="file" ref="fileInput" @change="handlerSendFile" style="display: none"/>
-                      <div class="iconfont icon-wenjian text-[22px]"/>
+                  <div v-if="targetId !== '1'" class="flex gap-[2px]">
+                    <div class="emoji-button" @click="fileInput.click()">
+                      <input
+                        type="file"
+                        ref="fileInput"
+                        @change="handlerSendFile"
+                        style="display: none"
+                      />
+                      <div class="iconfont icon-wenjian text-[22px]" />
                     </div>
-                    <div class="emoji-button"
-                         @click="()=>handlerVideoCall(currentSelectTarget?.targetInfo,true,true)">
-                      <div class="iconfont icon-yuyintonghua text-[22px]"/>
+                    <div
+                      class="emoji-button"
+                      @click="() => handlerVideoCall(currentSelectTarget?.targetInfo, true, true)"
+                    >
+                      <div class="iconfont icon-yuyintonghua text-[22px]" />
                     </div>
-                    <div class="emoji-button"
-                         @click="()=>handlerVideoCall(currentSelectTarget?.targetInfo,true,false)">
-                      <div class="iconfont icon-shipingtonghua text-[22px]"/>
+                    <div
+                      class="emoji-button"
+                      @click="() => handlerVideoCall(currentSelectTarget?.targetInfo, true, false)"
+                    >
+                      <div class="iconfont icon-shipingtonghua text-[22px]" />
                     </div>
                   </div>
                 </div>
               </div>
               <div class="publish-button" @click="handlerSubmitMsg">
-                <i class="iconfont icon-fasong2 text-[28px]"/>
+                <i class="iconfont icon-fasong2 text-[28px]" />
               </div>
             </div>
           </div>
         </div>
 
         <!-- 右侧菜单 -->
-        <div class="box-right" :class="{'show-right': showRight}">
+        <div class="box-right" :class="{ 'show-right': showRight }">
           <div class="right-top">
             <div class="flex items-center">
-              <linyu-avatar :info="{name:userInfoStore.userName,avatar:userInfoStore.avatar}" size="40px"
-                            class="mr-[5px] cursor-pointer" @click="modifyUserInfoIsOpen=true"/>
+              <linyu-avatar
+                :info="{ name: userInfoStore.userName, avatar: userInfoStore.avatar }"
+                size="40px"
+                class="mr-[5px] cursor-pointer"
+                @click="modifyUserInfoIsOpen = true"
+              />
               <div class="user-name">{{ userInfoStore.userName }}</div>
             </div>
             <div class="flex">
-              <linyu-icon-button v-if="themeStore.theme==='light'" @click="(e)=>toggleDark(e,'dark')"
-                                 icon="icon-taiyang"/>
-              <linyu-icon-button v-if="themeStore.theme==='dark'" @click="(e)=>toggleDark(e,'light')"
-                                 icon="icon-yueliang"/>
-              <linyu-icon-button @click="handlerLogout" icon="icon-tuichu"/>
+              <linyu-icon-button
+                v-if="themeStore.theme === 'light'"
+                @click="(e) => toggleDark(e, 'dark')"
+                icon="icon-taiyang"
+              />
+              <linyu-icon-button
+                v-if="themeStore.theme === 'dark'"
+                @click="(e) => toggleDark(e, 'light')"
+                icon="icon-yueliang"
+              />
+              <linyu-icon-button @click="handlerLogout" icon="icon-tuichu" />
             </div>
           </div>
           <div class="right-content">
             <div class="flex justify-between items-center mb-[10px]">
-              <div class="text-[rgb(var(--text-color))] text-[14px] font-[600]">在线人数（{{ onlineCount }}）</div>
-              <linyu-input placeholder="搜索用户"
-                           height="30px" width="140px" radius="5px" font-size="14px"
-                           v-model:value="userSearchValue"
+              <div class="text-[rgb(var(--text-color))] text-[14px] font-[600]">
+                在线人数（{{ onlineCount }}）
+              </div>
+              <linyu-input
+                placeholder="搜索用户"
+                height="30px"
+                width="140px"
+                radius="5px"
+                font-size="14px"
+                v-model:value="userSearchValue"
               />
             </div>
             <div class="online-list">
-              <div v-for="(item,index) in userList"
-                   class="online-list-item"
-                   :key="item.id"
-                   :class="{odd:index%2===0}">
+              <div
+                v-for="(item, index) in userList"
+                class="online-list-item"
+                :key="item.id"
+                :class="{ odd: index % 2 === 0 }"
+              >
                 <div class="online-item-content">
                   <div class="w-[40px] h-[40px] relative">
-                    <linyu-avatar :info="item" size="40px"/>
-                    <div v-if="item.status?.length" class="online-status"/>
+                    <linyu-avatar :info="item" size="40px" />
+                    <div v-if="item.status?.length" class="online-status" />
                   </div>
                   <div class="online-username">{{ item.name }}</div>
-                  <linyu-tooltip v-if="item.status?.includes('web')" content="浏览器在线" class="ml-[2px]">
-                    <img src="/badge/web-online.png" alt="" class="h-[18px]" draggable="false">
+                  <linyu-tooltip
+                    v-if="item.status?.includes('web')"
+                    content="浏览器在线"
+                    class="ml-[2px]"
+                  >
+                    <img src="/badge/web-online.png" alt="" class="h-[18px]" draggable="false" />
                   </linyu-tooltip>
-                  <linyu-tooltip v-if="item.status?.includes('ssh')" content="SSH在线" class="ml-[2px]">
-                    <img src="/badge/ssh-online.png" alt="" class="h-[18px]">
+                  <linyu-tooltip
+                    v-if="item.status?.includes('ssh')"
+                    content="SSH在线"
+                    class="ml-[2px]"
+                  >
+                    <img src="/badge/ssh-online.png" alt="" class="h-[18px]" />
                   </linyu-tooltip>
                 </div>
                 <div class="online-item-operation ml-[20px]">
-                  <linyu-text-button v-if="item.id!==userInfoStore.userId&&item.type!==UserType.Bot" text="私聊"
-                                     @click="()=>{onCreatePrivateChat(item.id);closeMask()}"/>
+                  <linyu-text-button
+                    v-if="item.id !== userInfoStore.userId && item.type !== UserType.Bot"
+                    text="私聊"
+                    @click="
+                      () => {
+                        onCreatePrivateChat(item.id)
+                        closeMask()
+                      }
+                    "
+                  />
                 </div>
               </div>
             </div>
@@ -228,51 +307,51 @@
 </template>
 
 <script setup>
-import {computed, nextTick, onMounted, onUnmounted, reactive, ref, watch} from 'vue'
-import {useThemeStore} from "@/stores/useThemeStore.js";
-import {toggleDark} from "@/utils/theme.js";
-import LinyuInput from "@/components/LinyuInput.vue";
-import {useRouter} from "vue-router";
-import LinyuAvatar from "@/components/LinyuAvatar.vue";
-import ChatListApi from "@/api/chatList.js";
-import LinyuDotHint from "@/components/LinyuDotHint.vue";
-import MessageApi from "@/api/message.js";
-import EventBus from "@/utils/eventBus.js";
-import UserApi from "@/api/user.js";
-import FileApi from "@/api/file.js";
-import LinyuTooltip from "@/components/LinyuTooltip.vue";
-import ws from "@/utils/ws.js";
-import LinyuTextButton from "@/components/LinyuTextButton.vue";
-import LinyuCardCarousel from "@/components/LinyuCardCarousel.vue";
-import {useToast} from '@/components/ToastProvider.vue';
-import LinyuIconButton from "@/components/LinyuIconButton.vue";
-import LinyuMsg from "@/components/Msg/LinyuMsg.vue";
-import {useChatMsgStore} from "@/stores/useChatMsgStore.js";
-import LinyuPopup from "@/components/LinyuPopup.vue";
-import LinyuEmojiBox from "@/components/LinyuEmojiBox.vue";
-import EmojiMsg from "@/components/Msg/MsgContent/EmojiMsg.vue";
-import LinyuChatListContent from "@/components/Msg/LinyuChatListContent.vue";
-import {MessageType} from "@/constant/messageType.js";
-import {MessageSource} from "@/constant/messageSource.js";
-import LinyuMsgInput from "@/components/LinyuMsgInput.vue";
-import {UserType} from "@/constant/userType.js";
-import TextMsg from "@/components/Msg/MsgContent/TextMsg.vue";
-import VideoChat from "@/components/VideoChat.vue";
-import VideoApi from "@/api/video.js";
-import CallMsg from "@/components/Msg/MsgContent/CallMsg.vue";
-import FileTransfer from "@/components/FileTransfer.vue";
-import LinyuLabel from "@/components/LinyuLabel.vue";
-import ModifyUserInfo from "@/components/ModifyUserInfo.vue";
-import {useUserInfoStore} from "@/stores/useUserInfoStore.js";
-import LinyuLoading from "@/components/LinyuLoading.vue";
+import { computed, nextTick, onMounted, onUnmounted, reactive, ref, watch } from 'vue'
+import { useThemeStore } from '@/stores/useThemeStore.js'
+import { toggleDark } from '@/utils/theme.js'
+import LinyuInput from '@/components/LinyuInput.vue'
+import { useRouter } from 'vue-router'
+import LinyuAvatar from '@/components/LinyuAvatar.vue'
+import ChatListApi from '@/api/chatList.js'
+import LinyuDotHint from '@/components/LinyuDotHint.vue'
+import MessageApi from '@/api/message.js'
+import EventBus from '@/utils/eventBus.js'
+import UserApi from '@/api/user.js'
+import FileApi from '@/api/file.js'
+import LinyuTooltip from '@/components/LinyuTooltip.vue'
+import ws from '@/utils/ws.js'
+import LinyuTextButton from '@/components/LinyuTextButton.vue'
+import LinyuCardCarousel from '@/components/LinyuCardCarousel.vue'
+import { useToast } from '@/components/ToastProvider.vue'
+import LinyuIconButton from '@/components/LinyuIconButton.vue'
+import LinyuMsg from '@/components/Msg/LinyuMsg.vue'
+import { useChatMsgStore } from '@/stores/useChatMsgStore.js'
+import LinyuPopup from '@/components/LinyuPopup.vue'
+import LinyuEmojiBox from '@/components/LinyuEmojiBox.vue'
+import EmojiMsg from '@/components/Msg/MsgContent/EmojiMsg.vue'
+import LinyuChatListContent from '@/components/Msg/LinyuChatListContent.vue'
+import { MessageType } from '@/constant/messageType.js'
+import { MessageSource } from '@/constant/messageSource.js'
+import LinyuMsgInput from '@/components/LinyuMsgInput.vue'
+import { UserType } from '@/constant/userType.js'
+import TextMsg from '@/components/Msg/MsgContent/TextMsg.vue'
+import VideoChat from '@/components/VideoChat.vue'
+import VideoApi from '@/api/video.js'
+import CallMsg from '@/components/Msg/MsgContent/CallMsg.vue'
+import FileTransfer from '@/components/FileTransfer.vue'
+import LinyuLabel from '@/components/LinyuLabel.vue'
+import ModifyUserInfo from '@/components/ModifyUserInfo.vue'
+import { useUserInfoStore } from '@/stores/useUserInfoStore.js'
+import LinyuLoading from '@/components/LinyuLoading.vue'
 
 let version = import.meta.env.VITE_LINYU_VERSION
 const themeStore = useThemeStore()
 const msgStore = useChatMsgStore()
-const userInfoStore = useUserInfoStore();
-const router = useRouter();
+const userInfoStore = useUserInfoStore()
+const router = useRouter()
 const showToast = useToast()
-let recordIndex = 0;
+let recordIndex = 0
 const showLeft = ref(false)
 const showRight = ref(false)
 const groupChat = ref()
@@ -306,29 +385,28 @@ const fileInput = ref()
 const modifyUserInfoIsOpen = ref(false)
 const isSendLoading = ref(false)
 
-msgStore.$subscribe((mutation) => {
-  const {scrollTop, clientHeight, scrollHeight} = chatShowAreaRef.value;
+msgStore.$subscribe(() => {
+  const { scrollTop, clientHeight, scrollHeight } = chatShowAreaRef.value
   const isBottom = scrollTop + clientHeight >= scrollHeight - 1
   if (isBottom) {
     scrollToBottom()
   }
-});
-
+})
 
 const handleScroll = () => {
   if (chatShowAreaRef.value) {
     //最底部更新currentNewMsgCount为0
-    const {scrollTop, clientHeight, scrollHeight} = chatShowAreaRef.value;
+    const { scrollTop, clientHeight, scrollHeight } = chatShowAreaRef.value
     const isBottom = scrollTop + clientHeight >= scrollHeight - 1
     if (isBottom) currentNewMsgCount.value = 0
     if (chatShowAreaRef.value.scrollTop === 0 && !isLoading.value) {
-      onGetMsgRecord();
+      onGetMsgRecord()
     }
   }
-};
+}
 
 const handlerSendFile = (event) => {
-  const files = event.target.files;
+  const files = event.target.files
   if (files && files.length > 0) {
     fileInfo.fileVisible = true
     fileInfo.fileTargetInfo = currentSelectTarget.value?.targetInfo
@@ -336,9 +414,9 @@ const handlerSendFile = (event) => {
     fileInfo.file = files[0]
     FileApi.invite({
       userId: fileInfo.fileTargetInfo.id,
-      fileInfo: {name: fileInfo.file.name, size: fileInfo.file.size}
+      fileInfo: { name: fileInfo.file.name, size: fileInfo.file.size },
     })
-    event.target.value = '';
+    event.target.value = ''
   } else {
     showToast('文件不正确~', true)
   }
@@ -346,7 +424,7 @@ const handlerSendFile = (event) => {
 
 const handlerVideoCall = (info, isSend, isOnlyAudio) => {
   if (!info) return
-  VideoApi.invite({userId: info.id, isOnlyAudio: isOnlyAudio})
+  VideoApi.invite({ userId: info.id, isOnlyAudio: isOnlyAudio })
   videoInfo.videoVisible = true
   videoInfo.videoTargetInfo = info
   videoInfo.videoIsSend = isSend
@@ -354,25 +432,25 @@ const handlerVideoCall = (info, isSend, isOnlyAudio) => {
 }
 
 const userList = computed(() => {
-  const values = Array.from(msgStore.userListMap.values());
+  const values = Array.from(msgStore.userListMap.values())
   if (userSearchValue.value) {
-    return values.filter(item => item.name.includes(userSearchValue.value));
+    return values.filter((item) => item.name.includes(userSearchValue.value))
   } else {
-    return values;
+    return values
   }
 })
 
 const userListAll = computed(() => {
-  const values = [];
+  const values = []
   for (const [, value] of msgStore.userListMap) {
-    values.push({name: value.name, id: value.id, type: value.type})
+    values.push({ name: value.name, id: value.id, type: value.type })
   }
   return values
 })
 
 const handlerSetEmojiBoxPosition = (e) => {
   const rect = e.target.getBoundingClientRect()
-  emojiPosition.value = {top: rect.top, left: rect.left}
+  emojiPosition.value = { top: rect.top, left: rect.left }
   isEmojiVisible.value = !isEmojiVisible.value
 }
 
@@ -386,7 +464,7 @@ const handlerOnEmoji = (emoji, type) => {
     //图片链接
     let msg = {
       content: emoji,
-      type: 'emoji'
+      type: 'emoji',
     }
     onSendMsg(msg)
   }
@@ -397,14 +475,16 @@ const handlerReceiveMsg = (data) => {
   handlerUpdateChatList(data)
   if (data.type === MessageType.Recall) {
     handlerReceiveRecallMsg(data)
-    return;
+    return
   }
   if (data.fromId === userInfoStore.userId && data.type !== MessageType.Call) return
-  const {scrollTop, clientHeight, scrollHeight} = chatShowAreaRef.value;
+  const { scrollTop, clientHeight, scrollHeight } = chatShowAreaRef.value
   const isBottom = scrollTop + clientHeight >= scrollHeight - 1
-  if ((data.source === MessageSource.User && targetId.value === data.fromId) ||
-      (data.source === MessageSource.User && targetId.value === data.toId) ||
-      (data.source === MessageSource.Group && targetId.value === "1")) {
+  if (
+    (data.source === MessageSource.User && targetId.value === data.fromId) ||
+    (data.source === MessageSource.User && targetId.value === data.toId) ||
+    (data.source === MessageSource.Group && targetId.value === '1')
+  ) {
     msgRecord.value.push(data)
     recordIndex++
     //是否在最底部
@@ -418,10 +498,10 @@ const handlerReceiveMsg = (data) => {
 
 //更新聊天列表信息
 const handlerUpdateChatList = (message) => {
-  if (message.fromId === "1" || message.toId === "1") {
+  if (message.fromId === '1' || message.toId === '1') {
     groupChat.value.unreadCount = groupChat.value.unreadCount + 1
     groupChat.value.lastMessage = message
-    return;
+    return
   }
   let i = 0
   while (i < privateChatList.value.length) {
@@ -429,7 +509,7 @@ const handlerUpdateChatList = (message) => {
     if (message.fromId === chat.targetId || message.toId === chat.targetId) {
       chat.unreadCount = chat.unreadCount + 1
       chat.lastMessage = message
-      break;
+      break
     }
     i++
   }
@@ -440,33 +520,33 @@ const handlerUpdateChatList = (message) => {
 
 //接收到通知
 const handlerReceiveNotify = (data) => {
-  let user = msgStore.userListMap.get(data.content.id);
+  let user = msgStore.userListMap.get(data.content.id)
   if (!user) {
     user = data.content
     msgStore.userListMap.set(user.id, user)
   }
   switch (data.type) {
-    case "web-online":
+    case 'web-online':
       if (!user.status) {
-        user.status = ['web'];
-        handlerUserListSort();
+        user.status = ['web']
+        handlerUserListSort()
       } else if (!user.status.includes('web')) {
-        user.status = [...user.status, 'web'];
-        handlerUserListSort();
+        user.status = [...user.status, 'web']
+        handlerUserListSort()
       }
-      break;
-    case "web-offline":
+      break
+    case 'web-offline':
       if (user.status) {
-        user.status = user.status.filter(status => status !== 'web');
-        handlerUserListSort();
+        user.status = user.status.filter((status) => status !== 'web')
+        handlerUserListSort()
       }
-      break;
+      break
   }
 }
 
 const handlerVideoMsg = async (msg) => {
   if (msg.fromId === userInfoStore.userId) return
-  if (msg.type === "invite") {
+  if (msg.type === 'invite') {
     const targetInfo = msgStore.userListMap.get(msg.fromId)
     videoInfo.videoVisible = true
     videoInfo.videoTargetInfo = targetInfo
@@ -477,7 +557,7 @@ const handlerVideoMsg = async (msg) => {
 
 const handlerFileMsg = async (msg) => {
   if (msg.fromId === userInfoStore.userId) return
-  if (msg.type === "invite") {
+  if (msg.type === 'invite') {
     const targetInfo = msgStore.userListMap.get(msg.fromId)
     fileInfo.fileVisible = true
     fileInfo.fileTargetInfo = targetInfo
@@ -491,17 +571,16 @@ onMounted(async () => {
   EventBus.on('on-receive-video', handlerVideoMsg)
   EventBus.on('on-receive-file', handlerFileMsg)
   if (chatShowAreaRef.value) {
-    chatShowAreaRef.value.addEventListener('scroll', handleScroll);
+    chatShowAreaRef.value.addEventListener('scroll', handleScroll)
   }
   onGetGroupChat()
   onGetPrivateChatList()
   await onGetUserListMap()
   await onGetOnlineWeb()
-  targetId.value = "1"
+  targetId.value = '1'
   EventBus.on('on-receive-notify', handlerReceiveNotify)
-  handlerUserListSort();
+  handlerUserListSort()
 })
-
 
 onUnmounted(() => {
   EventBus.off('on-receive-msg', handlerReceiveMsg)
@@ -510,92 +589,95 @@ onUnmounted(() => {
   EventBus.off('on-receive-video', handlerVideoMsg)
 })
 
-
 const scrollToBottom = () => {
   if (chatShowAreaRef.value) {
-    nextTick(() => chatShowAreaRef.value.scrollTop = chatShowAreaRef.value.scrollHeight);
+    nextTick(() => (chatShowAreaRef.value.scrollTop = chatShowAreaRef.value.scrollHeight))
   }
-};
+}
 
 //卡片点击
 const handlerCardClick = (card) => {
   switch (card.key) {
     case 'bili':
       window.open('https://space.bilibili.com/135427028/channel/series', '_blank')
-      break;
+      break
     case 'github':
       window.open('https://github.com/linyu-im', '_blank')
-      break;
+      break
     case 'qq':
-      navigator.clipboard.writeText("729158695")
-      showToast("QQ群号，已复制到粘贴板~")
-      break;
+      navigator.clipboard.writeText('729158695')
+      showToast('QQ群号，已复制到粘贴板~')
+      break
   }
 }
 
 //获取聊天记录
 const onGetMsgRecord = () => {
-  if (isLoading.value || isComplete.value || !targetId.value) return;
-  isLoading.value = true;
+  if (isLoading.value || isComplete.value || !targetId.value) return
+  isLoading.value = true
 
-  const container = chatShowAreaRef.value;
-  const scrollTopBeforeLoad = container ? container.scrollTop : 0;
-  const scrollHeightBeforeLoad = container ? container.scrollHeight : 0;
+  const container = chatShowAreaRef.value
+  const scrollTopBeforeLoad = container ? container.scrollTop : 0
+  const scrollHeightBeforeLoad = container ? container.scrollHeight : 0
 
-  MessageApi.record({targetId: targetId.value, index: recordIndex, num: 20}).then(res => {
-    if (res.code === 0) {
-      const newMessages = res.data;
-      if (newMessages.length > 0) {
-        msgRecord.value = [...newMessages.reverse(), ...msgRecord.value];
-        recordIndex += newMessages.length;
-        nextTick(() => {
-          if (recordIndex === newMessages.length) {
-            scrollToBottom();
-          } else {
-            requestAnimationFrame(() => {
-              if (container) {
-                const scrollHeightAfterLoad = container.scrollHeight;
-                container.scrollTop = scrollTopBeforeLoad + (scrollHeightAfterLoad - scrollHeightBeforeLoad);
-              }
-            });
-          }
-        });
-      } else {
-        isComplete.value = true
+  MessageApi.record({ targetId: targetId.value, index: recordIndex, num: 20 })
+    .then((res) => {
+      if (res.code === 0) {
+        const newMessages = res.data
+        if (newMessages.length > 0) {
+          msgRecord.value = [...newMessages.reverse(), ...msgRecord.value]
+          recordIndex += newMessages.length
+          nextTick(() => {
+            if (recordIndex === newMessages.length) {
+              scrollToBottom()
+            } else {
+              requestAnimationFrame(() => {
+                if (container) {
+                  const scrollHeightAfterLoad = container.scrollHeight
+                  container.scrollTop =
+                    scrollTopBeforeLoad + (scrollHeightAfterLoad - scrollHeightBeforeLoad)
+                }
+              })
+            }
+          })
+        } else {
+          isComplete.value = true
+        }
       }
-    }
-  }).finally(() => {
-    isLoading.value = false;
-  });
+    })
+    .finally(() => {
+      isLoading.value = false
+    })
 }
 
 //已读会话
 const onReadChatList = (id) => {
-  if (id === "1" && groupChat.value) {
+  if (id === '1' && groupChat.value) {
     groupChat.value.unreadCount = 0
-    return;
+    return
   }
   for (let i = 0; i < privateChatList.value.length; i++) {
-    let chat = privateChatList.value[i];
+    let chat = privateChatList.value[i]
     if (id === chat.targetId) {
-      chat.unreadCount = 0;
-      break;
+      chat.unreadCount = 0
+      break
     }
   }
-  ChatListApi.read({targetId: id});
+  ChatListApi.read({ targetId: id })
 }
 
-watch(targetId,
-    (newValue, oldValue) => {
-      msgContent.value = ''
-      recordIndex = 0
-      msgRecord.value = []
-      isComplete.value = false
-      isLoading.value = false
-      onGetMsgRecord()
-      onReadChatList(oldValue ?? newValue)
-    },
-    {immediate: true},
+watch(
+  targetId,
+  (newValue, oldValue) => {
+    msgContent.value = ''
+    recordIndex = 0
+    msgRecord.value = []
+    isComplete.value = false
+    isLoading.value = false
+    onGetMsgRecord()
+    onReadChatList(oldValue ?? newValue)
+  },
+  { immediate: true },
 )
 
 const closeMask = () => {
@@ -605,7 +687,7 @@ const closeMask = () => {
 
 //退出登录
 const handlerLogout = () => {
-  localStorage.removeItem("x-token")
+  localStorage.removeItem('x-token')
   userInfoStore.clearUserInfo()
   ws.disConnect()
   router.push('/login')
@@ -613,7 +695,7 @@ const handlerLogout = () => {
 
 //获取群聊
 const onGetGroupChat = () => {
-  ChatListApi.group().then(res => {
+  ChatListApi.group().then((res) => {
     if (res.code === 0) {
       groupChat.value = res.data
     }
@@ -624,7 +706,7 @@ const handlerSubmitMsg = () => {
   if (!msgContent.value.toString().trim()) return
   let msg = {
     content: JSON.stringify(msgInputRef.value.getNodeList()),
-    type: MessageType.Text
+    type: MessageType.Text,
   }
   onSendMsg(msg)
 }
@@ -641,23 +723,25 @@ const onSendMsg = (msg) => {
     msgContent: msg.content,
     referenceMsgId: msgStore.referenceMsg?.id,
     type: msg.type,
-  }).then(res => {
-    if (res.code === 0) {
-      msgRecord.value.push(res.data)
-      recordIndex++
-      scrollToBottom()
-    }
-  }).finally(() => {
-    isSendLoading.value = false
-    clearInterval(time)
   })
+    .then((res) => {
+      if (res.code === 0) {
+        msgRecord.value.push(res.data)
+        recordIndex++
+        scrollToBottom()
+      }
+    })
+    .finally(() => {
+      isSendLoading.value = false
+      clearInterval(time)
+    })
   msgContent.value = ''
   msgStore.referenceMsg = null
 }
 
 //删除私聊列表内容
 const onDeleteChatList = (id) => {
-  ChatListApi.delete({chatListId: id}).then(res => {
+  ChatListApi.delete({ chatListId: id }).then((res) => {
     if (res.code === 0) {
       onGetPrivateChatList()
     }
@@ -666,40 +750,40 @@ const onDeleteChatList = (id) => {
 
 //获取用户列表
 const onGetUserListMap = async () => {
-  await UserApi.listMap().then(res => {
+  await UserApi.listMap().then((res) => {
     if (res.code === 0) {
-      msgStore.setUserListMap(new Map(Object.entries(res.data)));
+      msgStore.setUserListMap(new Map(Object.entries(res.data)))
     }
   })
 }
 
 //获取web在线人员
 const onGetOnlineWeb = async () => {
-  await UserApi.onlineWeb().then(res => {
+  await UserApi.onlineWeb().then((res) => {
     if (res.code === 0) {
-      const onlineWeb = res.data;
+      const onlineWeb = res.data
       for (let i = 0; i < onlineWeb?.length; i++) {
         const user = msgStore.userListMap.get(onlineWeb[i])
-        user.status = Array.isArray(user.status) ? [...user.status, 'web'] : ['web'];
+        user.status = Array.isArray(user.status) ? [...user.status, 'web'] : ['web']
       }
     }
-  });
-};
+  })
+}
 
 //排序
 const handlerUserListSort = () => {
   const sortedEntries = [...msgStore.userListMap.entries()].sort(([, a], [, b]) => {
-    if (a?.type === UserType.Bot && b?.type !== UserType.Bot) return -1;
-    if (b?.type === UserType.Bot && a?.type !== UserType.Bot) return 1;
-    const aStatus = a?.status || [];
-    const bStatus = b?.status || [];
-    const aStatusEmpty = aStatus.length === 0;
-    const bStatusEmpty = bStatus.length === 0;
-    if (aStatusEmpty && !bStatusEmpty) return 1;
-    if (!aStatusEmpty && bStatusEmpty) return -1;
-    return 0;
-  });
-  msgStore.userListMap = new Map(sortedEntries);
+    if (a?.type === UserType.Bot && b?.type !== UserType.Bot) return -1
+    if (b?.type === UserType.Bot && a?.type !== UserType.Bot) return 1
+    const aStatus = a?.status || []
+    const bStatus = b?.status || []
+    const aStatusEmpty = aStatus.length === 0
+    const bStatusEmpty = bStatus.length === 0
+    if (aStatusEmpty && !bStatusEmpty) return 1
+    if (!aStatusEmpty && bStatusEmpty) return -1
+    return 0
+  })
+  msgStore.userListMap = new Map(sortedEntries)
   let onlineNum = 0
   for (let [, value] of msgStore.userListMap) {
     if (value.type === UserType.Bot) {
@@ -712,7 +796,7 @@ const handlerUserListSort = () => {
     }
   }
   onlineCount.value = onlineNum
-};
+}
 
 //接受到已撤回的消息
 const handlerReceiveRecallMsg = (msg) => {
@@ -720,14 +804,14 @@ const handlerReceiveRecallMsg = (msg) => {
     if (msgRecord.value[i].id === msg.id) {
       msgRecord.value[i].type = msg.type
       msgRecord.value[i].message = msg.message
-      break;
+      break
     }
   }
 }
 
 //获取私聊列表
 const onGetPrivateChatList = async () => {
-  await ChatListApi.privateList().then(res => {
+  await ChatListApi.privateList().then((res) => {
     if (res.code === 0) {
       privateChatList.value = res.data
     }
@@ -736,7 +820,7 @@ const onGetPrivateChatList = async () => {
 
 //创建私聊
 const onCreatePrivateChat = (id) => {
-  ChatListApi.create({targetId: id}).then(async res => {
+  ChatListApi.create({ targetId: id }).then(async (res) => {
     if (res.code === 0) {
       currentSelectTarget.value = res.data
       await onGetPrivateChatList()
@@ -745,7 +829,6 @@ const onCreatePrivateChat = (id) => {
   })
 }
 </script>
-
 
 <style lang="less" scoped>
 .chat-container {
@@ -884,7 +967,7 @@ const onCreatePrivateChat = (id) => {
         }
 
         &.black {
-          background-image: url("/group-bg.png");
+          background-image: url('/group-bg.png');
           background-size: cover;
           background-repeat: no-repeat;
           background-position: center;
@@ -907,10 +990,7 @@ const onCreatePrivateChat = (id) => {
             background-color: rgba(var(--background-color), 0.8);
           }
         }
-
       }
-
-
     }
 
     .chat-list-content {
@@ -929,11 +1009,9 @@ const onCreatePrivateChat = (id) => {
       display: flex;
       flex-direction: column;
 
-
       @media screen and (max-width: 900px) {
         margin: 0;
       }
-
 
       .middle-top {
         height: 60px;
@@ -972,7 +1050,11 @@ const onCreatePrivateChat = (id) => {
         flex: 1;
         min-height: 300px;
         border-radius: 5px;
-        background-image: linear-gradient(130deg, rgba(var(--background-color), 0.3), rgba(var(--background-color), 0.5));
+        background-image: linear-gradient(
+          130deg,
+          rgba(var(--background-color), 0.3),
+          rgba(var(--background-color), 0.5)
+        );
         backdrop-filter: blur(10px);
         border: rgba(var(--background-color), 0.5) 3px solid;
         display: flex;
@@ -1072,7 +1154,7 @@ const onCreatePrivateChat = (id) => {
             display: flex;
             justify-content: center;
             align-items: center;
-            color: #FFFFFF;
+            color: #ffffff;
             cursor: pointer;
             margin-left: 10px;
           }
@@ -1087,9 +1169,7 @@ const onCreatePrivateChat = (id) => {
       display: flex;
       flex-direction: column;
 
-
       @media screen and (max-width: 900px) {
-
         position: fixed;
         right: -280px;
         top: 0;
@@ -1159,7 +1239,11 @@ const onCreatePrivateChat = (id) => {
           .online-list-item {
             height: 50px;
             border-radius: 5px;
-            background-image: linear-gradient(to right, rgba(var(--minor-color), 0.2), rgba(var(--minor-color), 0));
+            background-image: linear-gradient(
+              to right,
+              rgba(var(--minor-color), 0.2),
+              rgba(var(--minor-color), 0)
+            );
             margin-bottom: 5px;
             display: flex;
             align-items: center;
@@ -1188,7 +1272,7 @@ const onCreatePrivateChat = (id) => {
                 right: 0;
                 bottom: 0;
                 background-color: rgb(var(--primary-color));
-                border: #FFFFFF 2px solid;
+                border: #ffffff 2px solid;
               }
             }
 
@@ -1200,7 +1284,11 @@ const onCreatePrivateChat = (id) => {
             }
 
             &.odd {
-              background-image: linear-gradient(to left, rgba(var(--minor-color), 0.2), rgba(var(--minor-color), 0));
+              background-image: linear-gradient(
+                to left,
+                rgba(var(--minor-color), 0.2),
+                rgba(var(--minor-color), 0)
+              );
             }
 
             &:hover {

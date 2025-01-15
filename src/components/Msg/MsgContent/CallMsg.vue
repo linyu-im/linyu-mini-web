@@ -1,18 +1,20 @@
 <template>
   <div class="call-msg">
-    <i class="iconfont icon-yuyintonghua text-[16px] mr-[5px]"/>
+    <i class="iconfont icon-yuyintonghua text-[16px] mr-[5px]" />
     <span>
-    {{ props.msg.message === '0' ? '通话未接通' : `通话时长 : ${formatTimingTime(props.msg.message)}` }}
-  </span>
+      {{
+        props.msg.message === '0'
+          ? '通话未接通'
+          : `通话时长 : ${formatTimingTime(props.msg.message)}`
+      }}
+    </span>
   </div>
 </template>
 
 <script setup>
+import { formatTimingTime } from '@/utils/date.js'
 
-import {formatTimingTime} from "@/utils/date.js";
-
-const props = defineProps({msg: Object, right: Boolean});
-
+const props = defineProps({ msg: Object, right: Boolean })
 </script>
 
 <style lang="less" scoped>

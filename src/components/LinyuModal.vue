@@ -1,15 +1,13 @@
 <template>
   <Transition name="fade">
     <div v-if="isOpen" class="modal-overlay">
-      <slot/>
+      <slot />
     </div>
   </Transition>
 </template>
 
 <script setup>
-
 const isOpen = defineModel('isOpen')
-
 </script>
 
 <style lang="less" scoped>

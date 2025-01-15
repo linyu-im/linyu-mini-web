@@ -8,37 +8,37 @@
 @tailwind utilities;
 
 ::-webkit-scrollbar {
-    width: 5px;
-    height: 5px;
+  width: 5px;
+  height: 5px;
 }
 
 ::-webkit-scrollbar-track {
-    background: transparent;
+  background: transparent;
 }
 
 ::-webkit-scrollbar-thumb {
-    border-radius: 3px;
-    background: rgba(140, 140, 140, 0.3);
+  border-radius: 3px;
+  background: rgba(140, 140, 140, 0.3);
 }
 
 ::view-transition-old(root),
 ::view-transition-new(root) {
-    animation: none;
-    mix-blend-mode: normal;
+  animation: none;
+  mix-blend-mode: normal;
 }
 
 ::view-transition-old(root) {
-    z-index: 1;
+  z-index: 1;
 }
 
 ::view-transition-new(root) {
-    z-index: 9999;
+  z-index: 9999;
 }
 
 .dark::view-transition-old(root) {
-    z-index: 9999;
+  z-index: 9999;
 }
 
 .dark::view-transition-new(root) {
-    z-index: 1;
+  z-index: 1;
 }

@@ -1,32 +1,22 @@
 <template>
-  <div class="carousel" @mouseenter="isExpansion=true" @mouseleave="isExpansion=false">
-    <transition-group
-        name="carousel"
-        tag="div"
-        class="carousel-wrapper"
-    >
+  <div class="carousel" @mouseenter="isExpansion = true" @mouseleave="isExpansion = false">
+    <transition-group name="carousel" tag="div" class="carousel-wrapper">
       <div
-          v-for="(card, index) in images"
-          :key="card"
-          class="vcard"
-          :style="getCardStyle(index)"
-          @click="handleCardClick(index, card)"
+        v-for="(card, index) in images"
+        :key="card"
+        class="vcard"
+        :style="getCardStyle(index)"
+        @click="handleCardClick(index, card)"
       >
-        <div
-            class="bg-image"
-            :style="{backgroundImage: `url(${card.img})`}"
-        />
-        <div
-            class="bg-color"
-            :style="bgColorStyle(index)"
-        ></div>
+        <div class="bg-image" :style="{ backgroundImage: `url(${card.img})` }" />
+        <div class="bg-color" :style="bgColorStyle(index)"></div>
       </div>
     </transition-group>
   </div>
 </template>
 
 <script setup>
-import {ref, watch, onMounted, onBeforeUnmount} from "vue"
+import { ref, watch, onMounted, onBeforeUnmount } from 'vue'
 
 const props = defineProps({
   images: {
@@ -36,7 +26,7 @@ const props = defineProps({
   play: {
     type: Boolean,
     default: false,
-  }
+  },
 })
 
 const emit = defineEmits(['click'])
@@ -53,67 +43,68 @@ watch(isExpansion, () => {
 })
 
 const bgColorStyle = (index) => {
-  const baseColor = 60 + index * 15;
+  const baseColor = 60 + index * 15
   return {
     backgroundColor: `rgba(${baseColor}, ${baseColor}, ${baseColor}, 1)`,
     opacity: index !== 0 && !isExpansion.value ? 1 : 0,
-    transition: "opacity 0.5s ease",
-  };
+    transition: 'opacity 0.5s ease',
+  }
 }
 
 const getCardStyle = (index) => {
-  const zIndex = images.value.length - index;
+  const zIndex = images.value.length - index
   return {
     zIndex,
-    transform: `translateY(${offset.value * index}px) scale(${
-        1 - 0.05 * index
-    })`,
-    cursor: index !== currentIndex.value ? "pointer" : "default",
-  };
+    transform: `translateY(${offset.value * index}px) scale(${1 - 0.05 * index})`,
+    cursor: index !== currentIndex.value ? 'pointer' : 'default',
+  }
 }
 
 const handleCardClick = (index, card) => {
   emit('click', card)
   if (index !== currentIndex.value) {
-    const clickedImage = images.value.splice(index, 1)[0];
-    images.value.unshift(clickedImage);
-    currentIndex.value = 0;
+    const clickedImage = images.value.splice(index, 1)[0]
+    images.value.unshift(clickedImage)
+    currentIndex.value = 0
   }
 }
 
 const startAutoPlay = () => {
   if (!autoPlayInterval) {
     autoPlayInterval = setInterval(() => {
-      const lastImage = images.value.pop();
-      images.value.unshift(lastImage);
-    }, 3000); // Change images every 3 seconds
+      const lastImage = images.value.pop()
+      images.value.unshift(lastImage)
+    }, 3000) // Change images every 3 seconds
   }
 }
 
 const stopAutoPlay = () => {
   if (autoPlayInterval) {
-    clearInterval(autoPlayInterval);
-    autoPlayInterval = null;
+    clearInterval(autoPlayInterval)
+    autoPlayInterval = null
   }
 }
 
-watch(() => props.play, (newVal) => {
-  if (newVal) {
-    startAutoPlay();
-  } else {
-    stopAutoPlay();
-  }
-});
+watch(
+  () => props.play,
+  (newVal) => {
+    if (newVal) {
+      startAutoPlay()
+    } else {
+      stopAutoPlay()
+    }
+  },
+)
 
 onMounted(() => {
   if (props.play) {
-    startAutoPlay();
+    startAutoPlay()
   }
-});
+})
 
 onBeforeUnmount(() => {
-  stopAutoPlay();
-});
+  stopAutoPlay()
+})
 </script>
 
 <style scoped>
@@ -137,7 +128,9 @@ onBeforeUnmount(() => {
   left: 0;
   width: 100%;
   height: 100%;
-  transition: transform 0.4s ease, z-index 0.4s ease;
+  transition:
+    transform 0.4s ease,
+    z-index 0.4s ease;
 }
 
 .bg-image,
@@ -172,11 +165,13 @@ onBeforeUnmount(() => {
   transform: translateY(-20px);
 }
 
-.fade-enter-active, .fade-leave-active {
+.fade-enter-active,
+.fade-leave-active {
   transition: opacity 0.5s ease;
 }
 
-.fade-enter-from, .fade-leave-to {
+.fade-enter-from,
+.fade-leave-to {
   opacity: 0;
 }
 </style>

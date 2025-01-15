@@ -5,7 +5,7 @@
 </template>
 <script setup>
 const props = defineProps({
-  text: [String, Number]
+  text: [String, Number],
 })
 </script>
 <style lang="less" scoped>
@@ -14,7 +14,7 @@ const props = defineProps({
   min-width: 18px;
   height: 18px;
   background: #ff4c4c;
-  color: #FFFFFF;
+  color: #ffffff;
   font-size: 10px;
   line-height: 18px;
   border-radius: 10px;

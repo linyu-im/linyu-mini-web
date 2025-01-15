@@ -10,7 +10,7 @@
 </template>
 <script setup>
 const props = defineProps({
-  label: String
+  label: String,
 })
 </script>
 
@@ -58,5 +58,4 @@ const props = defineProps({
     transform: translateY(100%);
   }
 }
-
 </style>

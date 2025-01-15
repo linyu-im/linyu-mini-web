@@ -1,37 +1,42 @@
 <template>
   <div class="msg" :class="{ right: props.right }">
     <div
-        class="msg-content"
-        :class="{ right: props.right }"
-        @mouseenter="showMenu"
-        @mouseleave="hideMenu"
+      class="msg-content"
+      :class="{ right: props.right }"
+      @mouseenter="showMenu"
+      @mouseleave="hideMenu"
     >
-      <div v-if="props.msg.type===MessageType.Text">
-        <text-msg :msg="props.msg" :right="right"/>
+      <div v-if="props.msg.type === MessageType.Text">
+        <text-msg :msg="props.msg" :right="right" />
       </div>
-      <div v-if="props.msg.type===MessageType.Emoji">
-        <emoji-msg :src="props.msg.message"/>
+      <div v-if="props.msg.type === MessageType.Emoji">
+        <emoji-msg :src="props.msg.message" />
       </div>
-      <div v-if="props.msg.type===MessageType.Call">
-        <call-msg :msg="props.msg" :right="right"/>
+      <div v-if="props.msg.type === MessageType.Call">
+        <call-msg :msg="props.msg" :right="right" />
       </div>
     </div>
     <!--消息相关操作-->
     <transition name="fade">
       <div
-          v-if="isShowMenu"
-          class="msg-menu mr-[5px] ml-[5px]"
-          @mouseenter="showMenu"
-          @mouseleave="hideMenu"
+        v-if="isShowMenu"
+        class="msg-menu mr-[5px] ml-[5px]"
+        @mouseenter="showMenu"
+        @mouseleave="hideMenu"
       >
         <linyu-tooltip content="引用">
-          <linyu-icon-button @click="handlerSetReference" size="24px" font-size="16px" icon="icon-yinyong"/>
+          <linyu-icon-button
+            @click="handlerSetReference"
+            size="24px"
+            font-size="16px"
+            icon="icon-yinyong"
+          />
         </linyu-tooltip>
         <linyu-tooltip v-if="right" content="撤回">
-          <linyu-icon-button @click="onRecallMsg" size="24px" font-size="16px" icon="icon-chehui"/>
+          <linyu-icon-button @click="onRecallMsg" size="24px" font-size="16px" icon="icon-chehui" />
         </linyu-tooltip>
         <linyu-tooltip @click="handlerCopy" content="复制">
-          <linyu-icon-button size="24px" font-size="16px" icon="icon-fuzhi"/>
+          <linyu-icon-button size="24px" font-size="16px" icon="icon-fuzhi" />
         </linyu-tooltip>
       </div>
     </transition>
@@ -39,48 +44,48 @@
 </template>
 
 <script setup>
-import {ref} from "vue";
-import LinyuIconButton from "@/components/LinyuIconButton.vue";
-import LinyuTooltip from "@/components/LinyuTooltip.vue";
-import MessageApi from "@/api/message.js";
-import {useToast} from '@/components/ToastProvider.vue';
-import {useChatMsgStore} from "@/stores/useChatMsgStore.js";
-import EmojiMsg from "@/components/Msg/MsgContent/EmojiMsg.vue";
-import {MessageType} from "@/constant/messageType.js";
-import TextMsg from "@/components/Msg/MsgContent/TextMsg.vue";
-import {TextContentType} from "@/constant/textContentType.js";
-import CallMsg from "@/components/Msg/MsgContent/CallMsg.vue";
+import { ref } from 'vue'
+import LinyuIconButton from '@/components/LinyuIconButton.vue'
+import LinyuTooltip from '@/components/LinyuTooltip.vue'
+import MessageApi from '@/api/message.js'
+import { useToast } from '@/components/ToastProvider.vue'
+import { useChatMsgStore } from '@/stores/useChatMsgStore.js'
+import EmojiMsg from '@/components/Msg/MsgContent/EmojiMsg.vue'
+import { MessageType } from '@/constant/messageType.js'
+import TextMsg from '@/components/Msg/MsgContent/TextMsg.vue'
+import { TextContentType } from '@/constant/textContentType.js'
+import CallMsg from '@/components/Msg/MsgContent/CallMsg.vue'
 
 const showToast = useToast()
-const msgStore = useChatMsgStore();
+const msgStore = useChatMsgStore()
 
 const props = defineProps({
   msg: Object,
-  right: {type: Boolean, default: false},
-});
+  right: { type: Boolean, default: false },
+})
 
-const isShowMenu = ref(false);
-let hideTimeout = null;
+const isShowMenu = ref(false)
+let hideTimeout = null
 
 const showMenu = () => {
   if (hideTimeout) {
-    clearTimeout(hideTimeout);
-    hideTimeout = null;
+    clearTimeout(hideTimeout)
+    hideTimeout = null
   }
-  isShowMenu.value = true;
-};
+  isShowMenu.value = true
+}
 
 const hideMenu = () => {
   hideTimeout = setTimeout(() => {
-    isShowMenu.value = false;
-    clearTimeout(hideTimeout);
-    hideTimeout = null;
-  }, 200);
-};
+    isShowMenu.value = false
+    clearTimeout(hideTimeout)
+    hideTimeout = null
+  }, 200)
+}
 
 //撤回消息
 const onRecallMsg = () => {
-  MessageApi.recall({msgId: props.msg.id}).then(res => {
+  MessageApi.recall({ msgId: props.msg.id }).then((res) => {
     if (res.code !== 0) {
       showToast(res.msg, true)
     }
@@ -95,7 +100,7 @@ const handlerCopy = () => {
   let msg = ''
   if (props.msg.type === MessageType.Text) {
     try {
-      const texts = JSON.parse(props.msg?.message);
+      const texts = JSON.parse(props.msg?.message)
       texts.map((item) => {
         if (item.type === TextContentType.At) {
           msg += '@' + JSON.parse(item.content).name
@@ -103,7 +108,7 @@ const handlerCopy = () => {
           msg += item.content
         }
       })
-    } catch (e) {
+    } catch {
       msg = props.msg?.message
     }
   }

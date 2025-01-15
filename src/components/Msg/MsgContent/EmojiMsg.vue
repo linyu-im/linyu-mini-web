@@ -1,11 +1,11 @@
 <template>
   <div class="emoji-container" :style="imageStyle">
-    <img draggable="false" :src="props.src" alt="" class="image"/>
+    <img draggable="false" :src="props.src" alt="" class="image" />
   </div>
 </template>
 
 <script setup>
-import {computed} from 'vue'
+import { computed } from 'vue'
 
 const props = defineProps({
   width: {
@@ -16,15 +16,15 @@ const props = defineProps({
   },
   padding: {
     type: [String, Number],
-    default: '5px'
+    default: '5px',
   },
-  src: String
+  src: String,
 })
 
 const imageStyle = computed(() => ({
   width: props.width,
   height: props.height,
-  padding: props.padding
+  padding: props.padding,
 }))
 </script>
 

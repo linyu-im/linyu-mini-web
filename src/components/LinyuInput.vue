@@ -1,21 +1,23 @@
 <template>
-  <div class="linyu-input-wrapper"
-       :style="`width:${props.width};
+  <div
+    class="linyu-input-wrapper"
+    :style="`width:${props.width};
          border-radius:${props.radius};
          height:${props.height};
          font-size:${props.fontSize};
          padding:${props.padding};
-         background-color: ${props.backgroundColor};`">
+         background-color: ${props.backgroundColor};`"
+  >
     <div v-if="props.label" class="linyu-input-label">{{ props.label }}</div>
     <input
-        ref="inputRef"
-        class="linyu-input"
-        :type="props.type"
-        :readonly="props.readonly"
-        :placeholder="props.placeholder"
-        v-model="value"
-        @keydown.enter="(e)=>emit('keydown.enter',e)"
-        @input="handleInput"
+      ref="inputRef"
+      class="linyu-input"
+      :type="props.type"
+      :readonly="props.readonly"
+      :placeholder="props.placeholder"
+      v-model="value"
+      @keydown.enter="(e) => emit('keydown.enter', e)"
+      @input="handleInput"
     />
     <div v-if="props.limit" class="linyu-input-limit">
       {{ value.toString().trim().length }}/{{ props.limit }}
@@ -24,8 +26,7 @@
 </template>
 
 <script setup>
-
-import {ref} from "vue";
+import { ref } from 'vue'
 
 const inputRef = ref()
 const props = defineProps({
@@ -35,7 +36,7 @@ const props = defineProps({
   limit: Number,
   readonly: {
     type: Boolean,
-    default: false
+    default: false,
   },
   width: {
     type: String,
@@ -60,19 +61,19 @@ const props = defineProps({
   backgroundColor: {
     type: String,
     default: 'rgb(var(--background-color))',
-  }
+  },
 })
 
 const value = defineModel('value')
 
 const handleInput = (event) => {
-  const inputValue = event.target.value.toString().trim();
+  const inputValue = event.target.value.toString().trim()
   if (props.limit && inputValue.length > props.limit) {
-    value.value = inputValue.slice(0, props.limit);
+    value.value = inputValue.slice(0, props.limit)
   } else {
-    value.value = inputValue;
+    value.value = inputValue
   }
-};
+}
 
 defineExpose({
   focus() {
@@ -80,7 +81,7 @@ defineExpose({
   },
   getInput() {
     return inputRef.value
-  }
+  },
 })
 
 const emit = defineEmits(['keydown.enter'])
@@ -112,7 +113,7 @@ const emit = defineEmits(['keydown.enter'])
     background-color: transparent;
 
     &::placeholder {
-      color: rgba(var(--text-color), 0.7);;
+      color: rgba(var(--text-color), 0.7);
     }
   }
 

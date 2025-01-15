@@ -1,14 +1,21 @@
 <template>
-  <div v-if="visible" @mousedown.stop class="linyu-popup" :class="{overlay:props.overlay}" @click="handlerOverlay">
-    <div ref="contentRef"
-         class="content"
-         :style="{
-             top: top + 'px',
-             left: left + 'px',
-             outline: 'none'
-           }"
-         tabindex="0"
-         @blur="handleBlur"
+  <div
+    v-if="visible"
+    @mousedown.stop
+    class="linyu-popup"
+    :class="{ overlay: props.overlay }"
+    @click="handlerOverlay"
+  >
+    <div
+      ref="contentRef"
+      class="content"
+      :style="{
+        top: top + 'px',
+        left: left + 'px',
+        outline: 'none',
+      }"
+      tabindex="0"
+      @blur="handleBlur"
     >
       <slot></slot>
     </div>
@@ -16,18 +23,18 @@
 </template>
 
 <script setup>
-import {nextTick, onBeforeUnmount, onMounted, ref, watch} from 'vue'
+import { nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 
 const props = defineProps({
   position: Object,
   isFocus: {
     type: Boolean,
-    default: true
+    default: true,
   },
   overlay: {
     type: Boolean,
-    default: false
-  }
+    default: false,
+  },
 })
 
 const top = ref(0)
@@ -37,17 +44,18 @@ const emit = defineEmits(['close'])
 const visible = defineModel('visible')
 const contentRef = ref()
 
-watch(() => visible.value, () => {
-  if (visible.value) {
-    nextTick(() => {
-      if (props.isFocus)
-        contentRef.value.focus()
-      top.value = props.position.top - contentRef.value.offsetHeight
-      left.value = props.position.left
-    })
-  }
-})
-
+watch(
+  () => visible.value,
+  () => {
+    if (visible.value) {
+      nextTick(() => {
+        if (props.isFocus) contentRef.value.focus()
+        top.value = props.position.top - contentRef.value.offsetHeight
+        left.value = props.position.left
+      })
+    }
+  },
+)
 
 const handlerOverlay = () => {
   if (props.overlay) {
@@ -65,11 +73,11 @@ const updateWindowSize = () => {
 }
 
 onMounted(() => {
-  window.addEventListener('resize', updateWindowSize);
+  window.addEventListener('resize', updateWindowSize)
 })
 
 onBeforeUnmount(() => {
-  window.removeEventListener('resize', updateWindowSize);
+  window.removeEventListener('resize', updateWindowSize)
 })
 </script>
 

@@ -1,17 +1,13 @@
 <template>
   <div class="loading-dots">
-    <span
-        v-for="n in dotsCount"
-        :key="n"
-        :class="['dot', { active: currentDot === n - 1 }]"
-    >
+    <span v-for="n in dotsCount" :key="n" :class="['dot', { active: currentDot === n - 1 }]">
       ·
     </span>
   </div>
 </template>
 
 <script setup>
-import {ref, onMounted, onBeforeUnmount} from 'vue';
+import { ref, onMounted, onBeforeUnmount } from 'vue'
 
 const props = defineProps({
   dotsCount: {
@@ -22,20 +18,20 @@ const props = defineProps({
     type: Number,
     default: 300,
   },
-});
+})
 
-const currentDot = ref(0);
-let timer = null;
+const currentDot = ref(0)
+let timer = null
 
 onMounted(() => {
   timer = setInterval(() => {
-    currentDot.value = (currentDot.value + 1) % props.dotsCount;
-  }, props.interval);
-});
+    currentDot.value = (currentDot.value + 1) % props.dotsCount
+  }, props.interval)
+})
 
 onBeforeUnmount(() => {
-  clearInterval(timer);
-});
+  clearInterval(timer)
+})
 </script>
 
 <style scoped>

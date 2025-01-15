@@ -1,10 +1,19 @@
 [data-theme='light'] {
-    --primary-color: 76, 155, 255;
-    --minor-color: 160, 217, 246;
-    --background-color: 255, 255, 255;
-    --text-color: 33, 33, 33;
-    --screen-bg-color: linear-gradient(120deg, rgba(var(--minor-color), 0.2), #EDF2F9, rgba(var(--primary-color), 0.4));
-    --scrren-grid-bg-color: linear-gradient(to right, rgba(76, 155, 255, 0.08) 1px, transparent 100px),
+  --primary-color: 76, 155, 255;
+  --minor-color: 160, 217, 246;
+  --background-color: 255, 255, 255;
+  --text-color: 33, 33, 33;
+  --screen-bg-color: linear-gradient(
+    120deg,
+    rgba(var(--minor-color), 0.2),
+    #edf2f9,
+    rgba(var(--primary-color), 0.4)
+  );
+  --scrren-grid-bg-color: linear-gradient(
+      to right,
+      rgba(76, 155, 255, 0.08) 1px,
+      transparent 100px
+    ),
     linear-gradient(to bottom, rgba(76, 155, 255, 0.08) 1px, transparent 100px);
-    --group-bg-color: 33, 33, 33;
+  --group-bg-color: 33, 33, 33;
 }

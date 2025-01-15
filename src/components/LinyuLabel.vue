@@ -1,17 +1,17 @@
 <template>
   <div ref="contentRef" class="linyu-label">
-    <slot/>
+    <slot />
   </div>
 </template>
 <script setup>
-import {nextTick, ref, watch} from "vue";
+import { nextTick, ref, watch } from 'vue'
 
 const contentRef = ref()
 watch(contentRef, async () => {
   if (contentRef.value) {
-    await nextTick();
-    const width = contentRef.value.offsetWidth;
-    contentRef.value.style.right = `-${width + 4}px`;
+    await nextTick()
+    const width = contentRef.value.offsetWidth
+    contentRef.value.style.right = `-${width + 4}px`
   }
 })
 </script>

@@ -1,19 +1,17 @@
 <template>
-  <div class="text-button" @click="(e)=>emit('click',e)">
+  <div class="text-button" @click="(e) => emit('click', e)">
     {{ props.text }}
   </div>
 </template>
 
 <script setup>
-const props = defineProps(
-    {
-      text: {
-        required: true,
-        type: String,
-      }
-    },
-)
-const emit = defineEmits(["click"])
+const props = defineProps({
+  text: {
+    required: true,
+    type: String,
+  },
+})
+const emit = defineEmits(['click'])
 </script>
 
 <style lang="less" scoped>

@@ -3,24 +3,24 @@
     <svg :width="size" :height="size" :viewBox="`0 0 ${size} ${size}`" class="circle-progress">
       <!-- 背景圆 -->
       <circle
-          class="circle-bg"
-          :cx="size / 2"
-          :cy="size / 2"
-          :r="radius"
-          :stroke-width="strokeWidth"
-          fill="none"
+        class="circle-bg"
+        :cx="size / 2"
+        :cy="size / 2"
+        :r="radius"
+        :stroke-width="strokeWidth"
+        fill="none"
       />
       <!-- 进度圆 -->
       <circle
-          class="circle-progress-bar"
-          :cx="size / 2"
-          :cy="size / 2"
-          :r="radius"
-          :stroke-width="strokeWidth"
-          fill="none"
-          :stroke-dasharray="circumference"
-          :stroke-dashoffset="circumference - (progress / 100) * circumference"
-          stroke-linecap="round"
+        class="circle-progress-bar"
+        :cx="size / 2"
+        :cy="size / 2"
+        :r="radius"
+        :stroke-width="strokeWidth"
+        fill="none"
+        :stroke-dasharray="circumference"
+        :stroke-dashoffset="circumference - (progress / 100) * circumference"
+        stroke-linecap="round"
       />
     </svg>
     <div class="progress-text">{{ progress }}%</div>
@@ -28,7 +28,7 @@
 </template>
 
 <script setup>
-import {computed} from 'vue';
+import { computed } from 'vue'
 
 const props = defineProps({
   progress: {
@@ -45,10 +45,10 @@ const props = defineProps({
     type: Number,
     default: 10,
   },
-});
+})
 
-const radius = computed(() => (props.size - props.strokeWidth) / 2);
-const circumference = computed(() => 2 * Math.PI * radius.value);
+const radius = computed(() => (props.size - props.strokeWidth) / 2)
+const circumference = computed(() => 2 * Math.PI * radius.value)
 </script>
 
 <style scoped>
@@ -59,7 +59,7 @@ const circumference = computed(() => 2 * Math.PI * radius.value);
   position: relative;
   width: 100%;
   height: 100%;
-  color: #FFFFFF;
+  color: #ffffff;
 }
 
 .circle-progress {

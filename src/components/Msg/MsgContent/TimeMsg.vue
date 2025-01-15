@@ -6,11 +6,11 @@
   </div>
 </template>
 <script setup>
-import {formatTime} from "@/utils/date.js";
+import { formatTime } from '@/utils/date.js'
 
 const props = defineProps({
   content: String,
-});
+})
 </script>
 <style>
 .recall-msg {
@@ -27,7 +27,6 @@ const props = defineProps({
     color: rgba(var(--text-color), 0.5);
     font-size: 12px;
     display: flex;
-
   }
 }
 </style>

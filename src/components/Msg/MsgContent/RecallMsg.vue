@@ -1,7 +1,7 @@
 <template>
   <div class="recall-msg">
     <div class="recall-content">
-      <div class="recall-content-name"> {{ props.msg.fromInfo.name }}</div>
+      <div class="recall-content-name">{{ props.msg.fromInfo.name }}</div>
       撤回一条消息
     </div>
   </div>
@@ -9,7 +9,7 @@
 <script setup>
 const props = defineProps({
   msg: Object,
-});
+})
 </script>
 <style>
 .recall-msg {

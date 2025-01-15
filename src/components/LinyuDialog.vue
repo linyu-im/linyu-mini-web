@@ -10,43 +10,42 @@
         </div>
         <div class="flex justify-end">
           <linyu-button type="minor" style="width: 80px" @click="onCancel">取 消</linyu-button>
-          <linyu-button style="width: 80px;margin-left: 10px" @click="onOk">确 定</linyu-button>
+          <linyu-button style="width: 80px; margin-left: 10px" @click="onOk">确 定</linyu-button>
         </div>
       </div>
     </div>
   </CustomModal>
 </template>
 <script setup>
-import CustomModal from "@/components/LinyuModal.vue";
-import LinyuButton from "@/components/LinyuButton.vue";
+import CustomModal from '@/components/LinyuModal.vue'
+import LinyuButton from '@/components/LinyuButton.vue'
 
 const props = defineProps({
   title: {
-    default: ''
+    default: '',
   },
   content: {
-    default: ''
-  }
+    default: '',
+  },
 })
 
-const emit = defineEmits(["cancel", "ok"])
-const isOpen = defineModel("isOpen")
+const emit = defineEmits(['cancel', 'ok'])
+const isOpen = defineModel('isOpen')
 
 const onCancel = () => {
-  emit("cancel")
+  emit('cancel')
 }
 
 const onOk = () => {
-  emit("ok")
+  emit('ok')
 }
-
 </script>
 
 <style lang="less" scoped>
 .custom-dialog {
   width: 380px;
   height: 180px;
-  background-color: #FFFFFF;
+  background-color: #ffffff;
   border-radius: 5px;
   padding: 15px;
   display: flex;
@@ -56,13 +55,13 @@ const onOk = () => {
     background-color: transparent;
 
     &:hover {
-      color: #FFFFFF;
+      color: #ffffff;
       background: #ff4c4c;
     }
   }
 
   @media screen and (max-width: 500px) {
-    width: 80%
+    width: 80%;
   }
 }
 </style>
