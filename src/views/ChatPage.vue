@@ -134,6 +134,7 @@
               >
                 <linyu-msg :msg="item" :user="msgStore.userListMap.get(item.fromId)" />
               </div>
+              <chat-skeleton v-if="isChatRecordLoading && msgRecord?.length <= 0 && !isComplete" />
               <div v-if="isSendLoading" class="flex w-full justify-center items-center">
                 <linyu-loading label="发送中" />
               </div>
@@ -344,6 +345,7 @@ import LinyuLabel from '@/components/LinyuLabel.vue'
 import ModifyUserInfo from '@/components/ModifyUserInfo.vue'
 import { useUserInfoStore } from '@/stores/useUserInfoStore.js'
 import LinyuLoading from '@/components/LinyuLoading.vue'
+import ChatSkeleton from '@/components/ChatSkeleton.vue'
 
 let version = import.meta.env.VITE_LINYU_VERSION
 const themeStore = useThemeStore()
@@ -384,6 +386,8 @@ const fileInfo = reactive({
 const fileInput = ref()
 const modifyUserInfoIsOpen = ref(false)
 const isSendLoading = ref(false)
+let chatRecordLoadingTimer = null
+const isChatRecordLoading = ref(false)
 
 msgStore.$subscribe(() => {
   const { scrollTop, clientHeight, scrollHeight } = chatShowAreaRef.value
@@ -647,6 +651,10 @@ const onGetMsgRecord = () => {
     })
     .finally(() => {
       isLoading.value = false
+      if (chatRecordLoadingTimer) {
+        clearTimeout(chatRecordLoadingTimer)
+        chatRecordLoadingTimer = null
+      }
     })
 }
 
@@ -674,6 +682,10 @@ watch(
     msgRecord.value = []
     isComplete.value = false
     isLoading.value = false
+    isChatRecordLoading.value = false
+    chatRecordLoadingTimer = setTimeout(() => {
+      isChatRecordLoading.value = true
+    }, 100)
     onGetMsgRecord()
     onReadChatList(oldValue ?? newValue)
   },
@@ -733,7 +745,7 @@ const onSendMsg = (msg) => {
     })
     .finally(() => {
       isSendLoading.value = false
-      clearInterval(time)
+      clearTimeout(time)
     })
   msgContent.value = ''
   msgStore.referenceMsg = null
