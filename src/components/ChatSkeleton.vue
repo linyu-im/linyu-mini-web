@@ -1,7 +1,7 @@
 <template>
   <div class="space-y-10">
     <div
-      v-for="n in skeletonCount"
+      v-for="n in props.skeletonCount"
       :key="n"
       class="flex justify-end items-start"
       :class="{ reverse: n % 2 === 0 }"

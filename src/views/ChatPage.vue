@@ -95,14 +95,20 @@
             </div>
           </div>
           <div class="mb-[10px]">
-            <linyu-card-carousel
-              :play="true"
-              :images="[
-                { key: 'github', img: '/github-bg.png' },
-                { key: 'bili', img: '/bili-bg.png' },
-                { key: 'qq', img: '/qq-bg.png' },
-              ]"
-              @click="(card) => handlerCardClick(card)"
+            <!--            <linyu-card-carousel-->
+            <!--              :play="true"-->
+            <!--              :images="[-->
+            <!--                { key: 'github', img: '/github-bg.png' },-->
+            <!--                { key: 'bili', img: '/bili-bg.png' },-->
+            <!--                { key: 'qq', img: '/qq-bg.png' },-->
+            <!--              ]"-->
+            <!--              @click="(card) => handlerCardClick(card)"-->
+            <!--            />-->
+            <img
+              src="/ad.png"
+              alt=""
+              class="rounded cursor-pointer"
+              @click="() => handlerCardClick({ key: 'ad' })"
             />
           </div>
         </div>
@@ -323,7 +329,6 @@ import FileApi from '@/api/file.js'
 import LinyuTooltip from '@/components/LinyuTooltip.vue'
 import ws from '@/utils/ws.js'
 import LinyuTextButton from '@/components/LinyuTextButton.vue'
-import LinyuCardCarousel from '@/components/LinyuCardCarousel.vue'
 import { useToast } from '@/components/ToastProvider.vue'
 import LinyuIconButton from '@/components/LinyuIconButton.vue'
 import LinyuMsg from '@/components/Msg/LinyuMsg.vue'
@@ -611,6 +616,10 @@ const handlerCardClick = (card) => {
     case 'qq':
       navigator.clipboard.writeText('729158695')
       showToast('QQ群号，已复制到粘贴板~')
+      break
+    case 'ad':
+      navigator.clipboard.writeText('cershy1120')
+      showToast('联系VX，已复制到粘贴板~')
       break
   }
 }
