@@ -9,6 +9,7 @@
 
 <script setup>
 import { computed, ref, watch } from 'vue'
+import { UserType } from '@/constant/userType.js'
 
 const hasError = ref(false)
 
@@ -49,6 +50,7 @@ const displayCharacter = computed(() => {
 
 const backgroundColor = computed(() => {
   if (props.color >= 0) return colors[props.color % colors.length]
+  if (props.info?.type === UserType.Bot) return 'rgba(255,255,255,0.9)'
   if (!props.info?.name) return colors[0]
   const firstChar = props.info?.name.trim().charAt(0)
   const charCode = firstChar.charCodeAt(0)
