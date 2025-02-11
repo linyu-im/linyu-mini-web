@@ -29,6 +29,7 @@
       @input="onInputText"
       @blur="onInputBlur"
       @focus="onInputFocus"
+      @paste="onPaste"
     ></div>
   </div>
 </template>
@@ -79,6 +80,14 @@ watch(inputValue, () => {
     onDataChange()
   }
 })
+
+const onPaste = (e) => {
+  e.preventDefault()
+  const text = e.clipboardData.getData('text/plain')
+  document.execCommand('insertText', false, text)
+  updateSelection()
+  onInputText()
+}
 
 const onInputBlur = () => {
   updateSelection()
