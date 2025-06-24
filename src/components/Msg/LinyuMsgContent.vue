@@ -7,7 +7,7 @@
       @mouseleave="hideMenu"
     >
       <div v-if="props.msg.type === MessageType.Text">
-        <text-msg :msg="props.msg" :right="right" />
+        <mark-down-text-msg :msg="props.msg" :right="right" />
       </div>
       <div v-if="props.msg.type === MessageType.Emoji">
         <emoji-msg :src="props.msg.message" />
@@ -52,9 +52,9 @@ import { useToast } from '@/components/ToastProvider.vue'
 import { useChatMsgStore } from '@/stores/useChatMsgStore.js'
 import EmojiMsg from '@/components/Msg/MsgContent/EmojiMsg.vue'
 import { MessageType } from '@/constant/messageType.js'
-import TextMsg from '@/components/Msg/MsgContent/TextMsg.vue'
 import { TextContentType } from '@/constant/textContentType.js'
 import CallMsg from '@/components/Msg/MsgContent/CallMsg.vue'
+import MarkDownTextMsg from '@/components/Msg/MsgContent/MarkDownTextMsg.vue'
 
 const showToast = useToast()
 const msgStore = useChatMsgStore()
