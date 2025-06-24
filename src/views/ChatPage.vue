@@ -16,6 +16,8 @@
     />
     <!--用户信息修改-->
     <modify-user-info v-model:is-open="modifyUserInfoIsOpen" />
+    <!--通知-->
+    <notify />
     <!--表情弹窗-->
     <linyu-popup v-model:visible="isEmojiVisible" :position="emojiPosition">
       <linyu-emoji-box @on-emoji="handlerOnEmoji" />
@@ -95,21 +97,21 @@
             </div>
           </div>
           <div class="mb-[10px]">
-            <!--            <linyu-card-carousel-->
-            <!--              :play="true"-->
-            <!--              :images="[-->
-            <!--                { key: 'github', img: '/github-bg.png' },-->
-            <!--                { key: 'bili', img: '/bili-bg.png' },-->
-            <!--                { key: 'qq', img: '/qq-bg.png' },-->
-            <!--              ]"-->
-            <!--              @click="(card) => handlerCardClick(card)"-->
-            <!--            />-->
-            <img
-              src="/ad.png"
-              alt=""
-              class="rounded cursor-pointer"
-              @click="() => handlerCardClick({ key: 'ad' })"
+            <linyu-card-carousel
+              :play="true"
+              :images="[
+                { key: 'github', img: '/github-bg.png' },
+                { key: 'bili', img: '/bili-bg.png' },
+                { key: 'qq', img: '/qq-bg.png' },
+              ]"
+              @click="(card) => handlerCardClick(card)"
             />
+            <!--            <img-->
+            <!--              src="/ad.png"-->
+            <!--              alt=""-->
+            <!--              class="rounded cursor-pointer"-->
+            <!--              @click="() => handlerCardClick({ key: 'ad' })"-->
+            <!--            />-->
           </div>
         </div>
         <!-- 遮罩层 -->
@@ -351,6 +353,8 @@ import ModifyUserInfo from '@/components/ModifyUserInfo.vue'
 import { useUserInfoStore } from '@/stores/useUserInfoStore.js'
 import LinyuLoading from '@/components/LinyuLoading.vue'
 import ChatSkeleton from '@/components/ChatSkeleton.vue'
+import LinyuCardCarousel from '@/components/LinyuCardCarousel.vue'
+import Notify from '@/components/Notify.vue'
 
 let version = import.meta.env.VITE_LINYU_VERSION
 const themeStore = useThemeStore()

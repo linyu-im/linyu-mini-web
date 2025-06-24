@@ -8,10 +8,13 @@
          padding:${props.padding};
          background-color: ${props.backgroundColor};`"
   >
-    <div v-if="props.label" class="linyu-input-label">{{ props.label }}</div>
+    <div v-if="props.label" class="linyu-input-label" :class="{ readonly: props.readonly }">
+      {{ props.label }}
+    </div>
     <input
       ref="inputRef"
       class="linyu-input"
+      :class="{ readonly: props.readonly }"
       :type="props.type"
       :readonly="props.readonly"
       :placeholder="props.placeholder"
@@ -105,6 +108,10 @@ const emit = defineEmits(['keydown.enter'])
     max-width: 70px;
     font-weight: 600;
     flex-shrink: 1;
+
+    &.readonly {
+      color: rgba(var(--text-color), 0.7);
+    }
   }
 
   .linyu-input {
@@ -113,6 +120,10 @@ const emit = defineEmits(['keydown.enter'])
     background-color: transparent;
 
     &::placeholder {
+      color: rgba(var(--text-color), 0.7);
+    }
+
+    &.readonly {
       color: rgba(var(--text-color), 0.7);
     }
   }
