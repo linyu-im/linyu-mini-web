@@ -126,12 +126,13 @@ const handlerCopy = () => {
     display: inline-block;
     word-break: break-word;
     max-width: 70%;
-    background-color: white;
+    background-color: rgba(var(--background-color));
     padding: 8px;
     border-radius: 0 10px 10px 10px;
     font-size: 14px;
     font-weight: 600;
     letter-spacing: 0.5px;
+    color: rgba(var(--text-color));
 
     &.right {
       border-radius: 10px 0 10px 10px;
